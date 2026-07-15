@@ -316,7 +316,7 @@ Guided by the installed `testing-setup` skill. **Fakes-first**; mock only when a
 - `compileSdk` bumped **36 → 37** and `jvmTarget`/`compileOptions` bumped **11 → 17** — both required once Material3 Expressive pulled in the alpha Compose BOM (see §13/§14).
 - Screenshot testing plugin + Jacoco plugin wiring.
 - Bundle `app/src/main/assets/questions.json` (fallback + test fixture).
-- CI: `.github/workflows/ci.yml` — PR checks (unit tests + lint + debug assemble) and a release-gate job (R8-enabled `assembleRelease`) on push to `main`.
+- CI: `.github/workflows/ci.yml` — PR checks (unit tests + lint + debug assemble) and a release-gate job (R8-enabled `assembleRelease`) on push to `master` (the repo's actual default branch — an initial `main` assumption was wrong and silently meant the workflow never triggered; fixed).
 
 ---
 
@@ -354,7 +354,7 @@ Each phase is independently reviewable and ships with its own tests (test-alongs
 - [ ] `README.md` documents architecture, how to build/run, how to run each test suite + coverage, and design decisions/assumptions.
 - [ ] Runs on min SDK 29 → target 36 (compileSdk 37); edge-to-edge verified (per `edge-to-edge` skill checklist).
 - [ ] Theme toggle (§13) works correctly and persists across restarts; verified against real Nav3 screens once Phase 4 lands (currently only wired into the Phase-0 placeholder).
-- [ ] CI green on PR (lint + unit tests + debug build) and on `main` (release gate).
+- [ ] CI green on PR (lint + unit tests + debug build) and on `master` (release gate).
 
 ---
 
@@ -405,4 +405,5 @@ This bleeding-edge stack (AGP 9.3, alpha Compose BOM, Kotlin 2.2.10) surfaced se
 
 - **Version control:** repo is not yet `git init`-ed. Any git write (init/add/commit/branch/push) will be **proposed for approval first**; only read-only git is run without asking.
 - **Android skills:** `edge-to-edge`, `testing-setup`, `navigation-3`, `adaptive`, `r8-analyzer`, `android-intent-security`, `styles`, `agp-9-upgrade` are installed under `.claude/skills/` — consult the relevant one per phase (see `CLAUDE.md`). The `agp-9-upgrade` skill was added mid-Phase-0 specifically to resolve the built-in-Kotlin/KSP conflict (§14.4) rather than guessing at a fix.
-- **CI:** `.github/workflows/ci.yml` assumes `main` as the default branch (repo not yet initialized — confirm/adjust once `git init` happens).
+- **CI:** `.github/workflows/ci.yml` triggers on `master` (the repo's real default branch — confirmed via `git remote -v` / `gh repo view` after `git init`). Dev work happens on `devlopment` (branch name as chosen), merged to `master` via PR.
+- **Branching:** `devlopment` (typo in name is intentional/as-chosen) is the working branch; `master` tracks `origin/master` and is only advanced via PR merge.

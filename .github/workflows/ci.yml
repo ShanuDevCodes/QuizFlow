@@ -36,8 +36,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Android SDK platform ${{ env.ANDROID_COMPILE_SDK }}
         run: |
+          yes | sdkmanager --licenses
           sdkmanager --install "platforms;android-${{ env.ANDROID_COMPILE_SDK }}" "build-tools;${{ env.ANDROID_BUILD_TOOLS }}"
 
       - name: Run unit tests (domain, data, ViewModel, Robolectric UI)
@@ -68,7 +72,7 @@ jobs:
   release-gate:
     name: Release build gate (R8)
     needs: verify
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -83,8 +87,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Android SDK platform ${{ env.ANDROID_COMPILE_SDK }}
         run: |
+          yes | sdkmanager --licenses
           sdkmanager --install "platforms;android-${{ env.ANDROID_COMPILE_SDK }}" "build-tools;${{ env.ANDROID_BUILD_TOOLS }}"
 
       - name: Assemble release (minified with R8)
