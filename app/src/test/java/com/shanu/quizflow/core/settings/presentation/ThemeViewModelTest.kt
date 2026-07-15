@@ -4,7 +4,9 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.shanu.quizflow.core.settings.domain.FakeThemePreferenceRepository
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
+import com.shanu.quizflow.core.settings.domain.usecase.ObserveDynamicColorEnabledUseCase
 import com.shanu.quizflow.core.settings.domain.usecase.ObserveThemeModeUseCase
+import com.shanu.quizflow.core.settings.domain.usecase.SetDynamicColorEnabledUseCase
 import com.shanu.quizflow.core.settings.domain.usecase.SetThemeModeUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,6 +37,8 @@ class ThemeViewModelTest {
         ThemeViewModel(
             observeThemeMode = ObserveThemeModeUseCase(repository),
             setThemeMode = SetThemeModeUseCase(repository),
+            observeDynamicColorEnabled = ObserveDynamicColorEnabledUseCase(repository),
+            setDynamicColorEnabled = SetDynamicColorEnabledUseCase(repository),
         )
 
     @Test
@@ -91,5 +95,49 @@ class ThemeViewModelTest {
         sut.onToggleTheme()
 
         assertThat(repository.setThemeModeCallCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `dynamicColorEnabled starts with the persisted value`() = runTest {
+        val repository = FakeThemePreferenceRepository(initialDynamicColorEnabled = true)
+        val sut = viewModel(repository)
+
+        sut.dynamicColorEnabled.test {
+            assertThat(awaitItem()).isTrue()
+        }
+    }
+
+    @Test
+    fun `onToggleDynamicColor flips false to true`() = runTest {
+        val repository = FakeThemePreferenceRepository(initialDynamicColorEnabled = false)
+        val sut = viewModel(repository)
+
+        sut.onToggleDynamicColor()
+
+        sut.dynamicColorEnabled.test {
+            assertThat(awaitItem()).isTrue()
+        }
+    }
+
+    @Test
+    fun `onToggleDynamicColor flips true to false`() = runTest {
+        val repository = FakeThemePreferenceRepository(initialDynamicColorEnabled = true)
+        val sut = viewModel(repository)
+
+        sut.onToggleDynamicColor()
+
+        sut.dynamicColorEnabled.test {
+            assertThat(awaitItem()).isFalse()
+        }
+    }
+
+    @Test
+    fun `onToggleDynamicColor persists the new preference through the repository`() = runTest {
+        val repository = FakeThemePreferenceRepository(initialDynamicColorEnabled = false)
+        val sut = viewModel(repository)
+
+        sut.onToggleDynamicColor()
+
+        assertThat(repository.setDynamicColorEnabledCallCount).isEqualTo(1)
     }
 }

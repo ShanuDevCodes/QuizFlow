@@ -5,9 +5,9 @@ import com.shanu.quizflow.core.settings.domain.repository.ThemePreferenceReposit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-/** In-memory fake used across settings unit tests instead of mocking. */
 class FakeThemePreferenceRepository(
     initial: ThemeMode = ThemeMode.SYSTEM,
+    initialDynamicColorEnabled: Boolean = false,
 ) : ThemePreferenceRepository {
 
     private val state = MutableStateFlow(initial)
@@ -19,5 +19,16 @@ class FakeThemePreferenceRepository(
     override suspend fun setThemeMode(mode: ThemeMode) {
         setThemeModeCallCount++
         state.value = mode
+    }
+
+    private val dynamicColorState = MutableStateFlow(initialDynamicColorEnabled)
+    override val dynamicColorEnabled: StateFlow<Boolean> = dynamicColorState
+
+    var setDynamicColorEnabledCallCount: Int = 0
+        private set
+
+    override suspend fun setDynamicColorEnabled(enabled: Boolean) {
+        setDynamicColorEnabledCallCount++
+        dynamicColorState.value = enabled
     }
 }

@@ -65,4 +65,20 @@ class ThemePreferenceRepositoryImplTest {
             assertThat(awaitItem()).isEqualTo(ThemeMode.SYSTEM)
         }
     }
+
+    @Test
+    fun `dynamicColorEnabled defaults to false when nothing is persisted`() = runTest {
+        repository.dynamicColorEnabled.test {
+            assertThat(awaitItem()).isFalse()
+        }
+    }
+
+    @Test
+    fun `setDynamicColorEnabled persists the value and dynamicColorEnabled reflects it`() = runTest {
+        repository.setDynamicColorEnabled(true)
+
+        repository.dynamicColorEnabled.test {
+            assertThat(awaitItem()).isTrue()
+        }
+    }
 }
