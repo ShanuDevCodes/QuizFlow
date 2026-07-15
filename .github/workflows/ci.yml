@@ -15,9 +15,8 @@ permissions:
   contents: read
 
 env:
+  # Matches gradle/gradle-daemon-jvm.properties (toolchainVersion=21).
   JAVA_VERSION: '21'
-  ANDROID_COMPILE_SDK: '37'
-  ANDROID_BUILD_TOOLS: '37.0.0'
 
 jobs:
   verify:
@@ -39,10 +38,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK platform ${{ env.ANDROID_COMPILE_SDK }}
-        run: |
-          yes | sdkmanager --licenses
-          sdkmanager --install "platforms;android-${{ env.ANDROID_COMPILE_SDK }}" "build-tools;${{ env.ANDROID_BUILD_TOOLS }}"
+      # Deliberately no explicit `sdkmanager --install "platforms;android-<N>"` here: this
+      # project's compileSdk (37, bumped for the alpha Compose BOM / Material3 Expressive —
+      # see docs/work/PRD.md #14) is a bleeding-edge preview platform not reliably resolvable
+      # by package name through sdkmanager. Accepting licenses lets AGP auto-download exactly
+      # the SDK components it needs during the Gradle build itself (the same thing that
+      # happens locally — nobody manually ran sdkmanager for platform 37 there either).
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses
 
       - name: Run unit tests (domain, data, ViewModel, Robolectric UI)
         run: ./gradlew testDebugUnitTest --stacktrace
@@ -90,10 +93,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK platform ${{ env.ANDROID_COMPILE_SDK }}
-        run: |
-          yes | sdkmanager --licenses
-          sdkmanager --install "platforms;android-${{ env.ANDROID_COMPILE_SDK }}" "build-tools;${{ env.ANDROID_BUILD_TOOLS }}"
+      # Deliberately no explicit `sdkmanager --install "platforms;android-<N>"` here: this
+      # project's compileSdk (37, bumped for the alpha Compose BOM / Material3 Expressive —
+      # see docs/work/PRD.md #14) is a bleeding-edge preview platform not reliably resolvable
+      # by package name through sdkmanager. Accepting licenses lets AGP auto-download exactly
+      # the SDK components it needs during the Gradle build itself (the same thing that
+      # happens locally — nobody manually ran sdkmanager for platform 37 there either).
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses
 
       - name: Assemble release (minified with R8)
         run: ./gradlew assembleRelease --stacktrace
