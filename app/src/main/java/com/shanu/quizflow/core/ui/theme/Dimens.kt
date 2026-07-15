@@ -15,5 +15,14 @@ object Dimens {
     val MinTouchTarget = 48.dp
 
     val OptionCardMinHeight = 56.dp
-    val StreakBadgeSize = 40.dp
+    val OptionCardBorderWidth = 2.dp
+    val StreakBadgeSize = 26.dp
+    val StreakBadgeContainerWidth = 64.dp
+    val StreakBadgeContainerHeight = 32.dp
+
+    val ProgressSegmentHeight = 6.dp
+    val ProgressSegmentSpacing = 4.dp
+
+    val SpotlightSize = 140.dp
+    val SpotlightOffset = 40.dp
 }

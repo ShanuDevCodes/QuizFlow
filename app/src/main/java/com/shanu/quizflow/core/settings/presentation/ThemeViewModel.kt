@@ -3,7 +3,9 @@ package com.shanu.quizflow.core.settings.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
+import com.shanu.quizflow.core.settings.domain.usecase.ObserveDynamicColorEnabledUseCase
 import com.shanu.quizflow.core.settings.domain.usecase.ObserveThemeModeUseCase
+import com.shanu.quizflow.core.settings.domain.usecase.SetDynamicColorEnabledUseCase
 import com.shanu.quizflow.core.settings.domain.usecase.SetThemeModeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,17 +18,27 @@ import javax.inject.Inject
 class ThemeViewModel @Inject constructor(
     observeThemeMode: ObserveThemeModeUseCase,
     private val setThemeMode: SetThemeModeUseCase,
+    observeDynamicColorEnabled: ObserveDynamicColorEnabledUseCase,
+    private val setDynamicColorEnabled: SetDynamicColorEnabledUseCase,
 ) : ViewModel() {
 
-    // Eagerly (not WhileSubscribed): onToggleTheme reads themeMode.value directly, which is
-    // only accurate once the upstream preference has actually been collected at least once.
     val themeMode: StateFlow<ThemeMode> = observeThemeMode()
         .stateIn(viewModelScope, SharingStarted.Eagerly, ThemeMode.SYSTEM)
+
+    val dynamicColorEnabled: StateFlow<Boolean> = observeDynamicColorEnabled()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** Cycles Light -> Dark -> System -> Light, per [ThemeMode.next]. */
     fun onToggleTheme() {
         viewModelScope.launch {
             setThemeMode(themeMode.value.next())
+        }
+    }
+
+    /** Flips the wallpaper-derived dynamic color preference (Android 12+ only). */
+    fun onToggleDynamicColor() {
+        viewModelScope.launch {
+            setDynamicColorEnabled(!dynamicColorEnabled.value)
         }
     }
 }
