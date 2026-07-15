@@ -1,0 +1,39 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Module build outputs (root /build above only covers the root; this covers app/ and any module)
+**/build/
+
+# Kotlin build/daemon artifacts
+.kotlin/
+
+# Heap dumps / crash logs
+*.hprof
+*.log
+
+# Signing keys — never commit
+*.jks
+*.keystore
+
+# Additional IDE user/session-specific files
+/.idea/deploymentTargetSelector.xml
+/.idea/deploymentTargetDropDown.xml
+/.idea/appInsightsSettings.xml
+/.idea/shelf/
+
+# Personal (per-user) Claude Code settings
+.claude
+CLAUDE.md
