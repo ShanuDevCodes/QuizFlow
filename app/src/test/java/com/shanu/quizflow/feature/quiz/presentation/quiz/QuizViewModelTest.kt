@@ -1,5 +1,6 @@
 package com.shanu.quizflow.feature.quiz.presentation.quiz
 
+import androidx.lifecycle.SavedStateHandle
 import com.google.common.truth.Truth.assertThat
 import com.shanu.quizflow.core.coroutines.FakeDispatcherProvider
 import com.shanu.quizflow.core.result.AppError
@@ -24,6 +25,7 @@ import org.junit.Before
 import org.junit.Test
 
 private const val REVEAL_MS = 2_000L
+private const val LOADING_MIN_MS = 0L
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class QuizViewModelTest {
@@ -43,14 +45,19 @@ class QuizViewModelTest {
     private fun viewModel(
         repository: QuizRepository = FakeQuizRepository(),
         revealMs: Long = REVEAL_MS,
+        loadingMinMs: Long = LOADING_MIN_MS,
+        savedStateHandle: SavedStateHandle = SavedStateHandle(),
     ) = QuizViewModel(
         getQuestions = GetQuestionsUseCase(repository),
         answerQuestion = AnswerQuestionUseCase(),
         skipQuestion = SkipQuestionUseCase(),
         advanceQuiz = AdvanceQuizUseCase(),
         restartQuiz = RestartQuizUseCase(),
+        uiStateMapper = QuizUiStateMapper(),
         dispatcherProvider = FakeDispatcherProvider(testDispatcher),
+        savedStateHandle = savedStateHandle,
         revealDurationMs = revealMs,
+        loadingMinDurationMs = loadingMinMs,
     )
 
     @Test
@@ -78,7 +85,7 @@ class QuizViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertThat(vm.uiState.value).isInstanceOf(QuizUiState.Error::class.java)
-        assertThat((vm.uiState.value as QuizUiState.Error).message).isNotEmpty()
+        assertThat((vm.uiState.value as QuizUiState.Error).message.messageRes).isNotEqualTo(0)
     }
 
     @Test
@@ -246,5 +253,89 @@ class QuizViewModelTest {
         assertThat(state.questionNumber).isEqualTo(1)
         assertThat(state.currentStreak).isEqualTo(0)
         assertThat(state.phase).isEqualTo(Phase.ANSWERING)
+    }
+
+    @Test
+    fun `a fast load still waits out the injected minimum loading duration`() = runTest(testDispatcher) {
+        val vm = viewModel(
+            repository = FakeQuizRepository(DataResult.Success(sampleQuestions(10))),
+            loadingMinMs = 1_000L,
+        )
+
+        testDispatcher.scheduler.advanceTimeBy(500L)
+        assertThat(vm.uiState.value).isEqualTo(QuizUiState.Loading)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertThat(vm.uiState.value).isInstanceOf(QuizUiState.Question::class.java)
+    }
+
+    @Test
+    fun `a zero minimum loading duration surfaces the question as soon as it loads`() = runTest(testDispatcher) {
+        val vm = viewModel(
+            repository = FakeQuizRepository(DataResult.Success(sampleQuestions(10))),
+            loadingMinMs = 0L,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertThat(vm.uiState.value).isInstanceOf(QuizUiState.Question::class.java)
+    }
+
+    @Test
+    fun `progress is persisted to SavedStateHandle as the quiz advances`() = runTest(testDispatcher) {
+        val savedStateHandle = SavedStateHandle()
+        val vm = viewModel(
+            repository = FakeQuizRepository(DataResult.Success(sampleQuestions(10))),
+            savedStateHandle = savedStateHandle,
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        vm.onOptionSelected(0)
+        testDispatcher.scheduler.advanceTimeBy(REVEAL_MS)
+        testDispatcher.scheduler.runCurrent()
+
+        assertThat(savedStateHandle.get<Int>("quiz_current_index")).isEqualTo(1)
+        assertThat(savedStateHandle.get<Int>("quiz_correct_count")).isEqualTo(1)
+        assertThat(savedStateHandle.get<Int>("quiz_current_streak")).isEqualTo(1)
+    }
+
+    @Test
+    fun `a fresh ViewModel restores progress from a pre-populated SavedStateHandle`() = runTest(testDispatcher) {
+        val savedStateHandle = SavedStateHandle(
+            mapOf(
+                "quiz_current_index" to 4,
+                "quiz_correct_count" to 3,
+                "quiz_skipped_count" to 1,
+                "quiz_current_streak" to 2,
+                "quiz_longest_streak" to 2,
+            ),
+        )
+        val vm = viewModel(
+            repository = FakeQuizRepository(DataResult.Success(sampleQuestions(10))),
+            savedStateHandle = savedStateHandle,
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = vm.uiState.value as QuizUiState.Question
+        assertThat(state.questionNumber).isEqualTo(5)
+        assertThat(state.currentStreak).isEqualTo(2)
+    }
+
+    @Test
+    fun `restarting clears the persisted progress back to a fresh session`() = runTest(testDispatcher) {
+        val savedStateHandle = SavedStateHandle()
+        val vm = viewModel(
+            repository = FakeQuizRepository(DataResult.Success(sampleQuestions(1))),
+            savedStateHandle = savedStateHandle,
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+        vm.onOptionSelected(0)
+        testDispatcher.scheduler.advanceTimeBy(REVEAL_MS)
+        testDispatcher.scheduler.runCurrent()
+
+        vm.onRestart()
+
+        assertThat(savedStateHandle.get<Int>("quiz_current_index")).isEqualTo(0)
+        assertThat(savedStateHandle.get<Int>("quiz_correct_count")).isEqualTo(0)
     }
 }

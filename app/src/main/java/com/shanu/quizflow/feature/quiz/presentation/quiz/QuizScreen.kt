@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,17 +18,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.shanu.quizflow.R
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.core.ui.components.LottieCelebration
 import com.shanu.quizflow.core.ui.components.PopIn
@@ -37,11 +33,11 @@ import com.shanu.quizflow.core.ui.components.QuizFlowTopBar
 import com.shanu.quizflow.core.ui.components.SkipButton
 import com.shanu.quizflow.core.ui.components.SpotlightSurface
 import com.shanu.quizflow.core.ui.components.StreakBadge
+import com.shanu.quizflow.core.ui.rememberStaggeredReveal
+import com.shanu.quizflow.core.ui.swipeToSkip
 import com.shanu.quizflow.core.ui.theme.Dimens
 import com.shanu.quizflow.core.ui.theme.QuizFlowTheme
-import kotlinx.coroutines.delay
 
-private val SwipeToSkipThreshold = 96.dp
 private const val QuestionExitDurationMs = 300
 private const val OptionRevealStaggerMs = 180L
 private const val InitialRevealDelayMs = 50L
@@ -58,14 +54,13 @@ fun QuizScreen(
     modifier: Modifier = Modifier,
 ) {
     val answering = state.phase == Phase.ANSWERING
-    val thresholdPx = with(LocalDensity.current) { SwipeToSkipThreshold.toPx() }
 
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 QuizFlowTopBar(
-                    title = "QuizFlow",
+                    title = stringResource(R.string.app_name),
                     themeMode = themeMode,
                     onToggleTheme = onToggleTheme,
                     dynamicColorEnabled = dynamicColorEnabled,
@@ -78,25 +73,7 @@ fun QuizScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(Dimens.SpaceMedium)
-                    .let { base ->
-                        if (answering) {
-                            base.pointerInput(onSkip) {
-                                var totalDrag = 0f
-                                detectHorizontalDragGestures(
-                                    onDragStart = { totalDrag = 0f },
-                                    onHorizontalDrag = { change, dragAmount ->
-                                        change.consume()
-                                        totalDrag += dragAmount
-                                    },
-                                    onDragEnd = {
-                                        if (totalDrag < -thresholdPx) onSkip()
-                                    },
-                                )
-                            }
-                        } else {
-                            base
-                        }
-                    },
+                    .swipeToSkip(enabled = answering, onSkip = onSkip),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -104,7 +81,7 @@ fun QuizScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Question ${state.questionNumber} of ${state.totalQuestions}",
+                        text = stringResource(R.string.question_progress, state.questionNumber, state.totalQuestions),
                         style = MaterialTheme.typography.labelLarge,
                     )
                     StreakBadge(currentStreak = state.currentStreak, active = state.streakActive)
@@ -131,17 +108,16 @@ fun QuizScreen(
                     },
                     label = "questionContent",
                 ) { questionState ->
-                    val revealedCount = remember { mutableIntStateOf(0) }
-                    LaunchedEffect(Unit) {
-                        delay(QuestionExitDurationMs.toLong())
-                        repeat(questionState.options.size + 1) { step ->
-                            delay(if (step == 0) InitialRevealDelayMs else OptionRevealStaggerMs)
-                            revealedCount.intValue = step + 1
-                        }
-                    }
+                    val revealedCount by rememberStaggeredReveal(
+                        key = questionState.questionNumber,
+                        stepCount = questionState.options.size + 1,
+                        stepDelayMs = OptionRevealStaggerMs,
+                        firstStepDelayMs = InitialRevealDelayMs,
+                        initialDelayMs = QuestionExitDurationMs.toLong(),
+                    )
 
                     Column {
-                        PopIn(visible = revealedCount.intValue >= 1) {
+                        PopIn(visible = revealedCount >= 1) {
                             SpotlightSurface(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -156,13 +132,12 @@ fun QuizScreen(
                             }
                         }
 
-                        val optionSpacing = remember { Dimens.SpaceSmall }
                         questionState.options.forEachIndexed { index, option ->
-                            PopIn(visible = revealedCount.intValue >= index + 2) {
+                            PopIn(visible = revealedCount >= index + 2) {
                                 OptionCard(
                                     option = option,
                                     onClick = { onOptionSelected(index) },
-                                    modifier = Modifier.padding(bottom = optionSpacing),
+                                    modifier = Modifier.padding(bottom = Dimens.SpaceSmall),
                                 )
                             }
                         }

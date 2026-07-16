@@ -23,23 +23,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.shanu.quizflow.R
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.core.ui.components.LottieCelebration
 import com.shanu.quizflow.core.ui.components.PopIn
 import com.shanu.quizflow.core.ui.components.QuizFlowTopBar
+import com.shanu.quizflow.core.ui.rememberStaggeredReveal
 import com.shanu.quizflow.core.ui.theme.Dimens
 import com.shanu.quizflow.core.ui.theme.QuizFlowTheme
 import com.shanu.quizflow.feature.quiz.domain.model.QuizResult
-import kotlinx.coroutines.delay
 
 private const val CelebrationScoreThreshold = 0.8f
 private const val RevealStaggerMs = 120L
@@ -58,20 +59,18 @@ fun ResultsScreen(
     val scoreFraction = remember(result) { if (result.total == 0) 0f else result.correct.toFloat() / result.total }
     val celebrate = scoreFraction >= CelebrationScoreThreshold
 
-    val revealedCount = remember(result) { mutableIntStateOf(0) }
-    LaunchedEffect(result) {
-        repeat(RevealStepCount) { step ->
-            delay(RevealStaggerMs)
-            revealedCount.intValue = step + 1
-        }
-    }
+    val revealedCount by rememberStaggeredReveal(
+        key = result,
+        stepCount = RevealStepCount,
+        stepDelayMs = RevealStaggerMs,
+    )
 
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 QuizFlowTopBar(
-                    title = "Results",
+                    title = stringResource(R.string.results_title),
                     themeMode = themeMode,
                     onToggleTheme = onToggleTheme,
                     dynamicColorEnabled = dynamicColorEnabled,
@@ -87,7 +86,7 @@ fun ResultsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                PopIn(visible = revealedCount.intValue >= 1) {
+                PopIn(visible = revealedCount >= 1) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         if (celebrate) {
                             Icon(
@@ -100,7 +99,9 @@ fun ResultsScreen(
                             )
                         }
                         Text(
-                            text = if (celebrate) "Great job!" else "Quiz complete",
+                            text = stringResource(
+                                if (celebrate) R.string.results_great_job else R.string.results_quiz_complete,
+                            ),
                             style = MaterialTheme.typography.headlineMedium,
                             modifier = Modifier.padding(bottom = Dimens.SpaceLarge),
                         )
@@ -109,30 +110,30 @@ fun ResultsScreen(
 
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(Dimens.SpaceLarge)) {
-                        PopIn(visible = revealedCount.intValue >= 2) {
+                        PopIn(visible = revealedCount >= 2) {
                             StatRow(
                                 icon = Icons.Filled.CheckCircle,
-                                label = "Correct",
-                                value = "${result.correct} / ${result.total}",
+                                label = stringResource(R.string.stat_correct_label),
+                                value = stringResource(R.string.stat_correct_value, result.correct, result.total),
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             )
                         }
                         HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.SpaceExtraSmall))
-                        PopIn(visible = revealedCount.intValue >= 3) {
+                        PopIn(visible = revealedCount >= 3) {
                             StatRow(
                                 icon = Icons.Filled.LocalFireDepartment,
-                                label = "Longest streak",
+                                label = stringResource(R.string.stat_longest_streak_label),
                                 value = result.longestStreak.toString(),
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             )
                         }
                         HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.SpaceExtraSmall))
-                        PopIn(visible = revealedCount.intValue >= 4) {
+                        PopIn(visible = revealedCount >= 4) {
                             StatRow(
                                 icon = Icons.Filled.SkipNext,
-                                label = "Skipped",
+                                label = stringResource(R.string.stat_skipped_label),
                                 value = result.skipped.toString(),
                                 containerColor = MaterialTheme.colorScheme.errorContainer,
                                 contentColor = MaterialTheme.colorScheme.onErrorContainer,
@@ -141,14 +142,14 @@ fun ResultsScreen(
                     }
                 }
 
-                PopIn(visible = revealedCount.intValue >= 5, modifier = Modifier.fillMaxWidth()) {
+                PopIn(visible = revealedCount >= 5, modifier = Modifier.fillMaxWidth()) {
                     Button(
                         onClick = onRestart,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = Dimens.SpaceExtraLarge),
                     ) {
-                        Text("Restart Quiz")
+                        Text(stringResource(R.string.restart_quiz_button))
                     }
                 }
             }

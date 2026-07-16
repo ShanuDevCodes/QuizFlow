@@ -1,17 +1,18 @@
 package com.shanu.quizflow.feature.quiz.presentation.quiz
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shanu.quizflow.core.coroutines.DispatcherProvider
-import com.shanu.quizflow.core.result.AppError
 import com.shanu.quizflow.core.result.DataResult
+import com.shanu.quizflow.feature.quiz.domain.model.Question
 import com.shanu.quizflow.feature.quiz.domain.model.QuizSession
-import com.shanu.quizflow.feature.quiz.domain.model.toResult
 import com.shanu.quizflow.feature.quiz.domain.usecase.AdvanceQuizUseCase
 import com.shanu.quizflow.feature.quiz.domain.usecase.AnswerQuestionUseCase
 import com.shanu.quizflow.feature.quiz.domain.usecase.GetQuestionsUseCase
 import com.shanu.quizflow.feature.quiz.domain.usecase.RestartQuizUseCase
 import com.shanu.quizflow.feature.quiz.domain.usecase.SkipQuestionUseCase
+import com.shanu.quizflow.feature.quiz.presentation.di.LoadingMinDurationMillis
 import com.shanu.quizflow.feature.quiz.presentation.di.RevealDurationMillis
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -22,7 +23,24 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val LoadingScreenMinimumDurationMs = 2_000L
+internal fun remainingLoadingDelayMs(minDurationMs: Long, elapsedMs: Long): Long =
+    (minDurationMs - elapsedMs).coerceAtLeast(0L)
+
+private sealed interface InternalState {
+    data object Loading : InternalState
+    data class Error(val message: AppErrorMessage) : InternalState
+    data class Active(
+        val session: QuizSession,
+        val phase: Phase = Phase.ANSWERING,
+        val selectedIndex: Int? = null,
+    ) : InternalState
+}
+
+private const val KeyCurrentIndex = "quiz_current_index"
+private const val KeyCorrectCount = "quiz_correct_count"
+private const val KeySkippedCount = "quiz_skipped_count"
+private const val KeyCurrentStreak = "quiz_current_streak"
+private const val KeyLongestStreak = "quiz_longest_streak"
 
 @HiltViewModel
 class QuizViewModel @Inject constructor(
@@ -31,20 +49,23 @@ class QuizViewModel @Inject constructor(
     private val skipQuestion: SkipQuestionUseCase,
     private val advanceQuiz: AdvanceQuizUseCase,
     private val restartQuiz: RestartQuizUseCase,
+    private val uiStateMapper: QuizUiStateMapper,
     private val dispatcherProvider: DispatcherProvider,
+    private val savedStateHandle: SavedStateHandle,
     @param:RevealDurationMillis private val revealDurationMs: Long,
+    @param:LoadingMinDurationMillis private val loadingMinDurationMs: Long,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<QuizUiState>(QuizUiState.Loading)
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
-    private data class ScreenState(
-        val session: QuizSession,
-        val phase: Phase = Phase.ANSWERING,
-        val selectedIndex: Int? = null,
-    )
+    private var internalState: InternalState = InternalState.Loading
+        set(value) {
+            field = value
+            if (value is InternalState.Active) persistProgress(value.session)
+            _uiState.value = value.toUiState()
+        }
 
-    private var screenState: ScreenState? = null
     private var revealJob: Job? = null
 
     init {
@@ -54,16 +75,15 @@ class QuizViewModel @Inject constructor(
     fun onRetry() = loadQuestions()
 
     fun onOptionSelected(index: Int) {
-        val current = screenState ?: return
+        val current = internalState as? InternalState.Active ?: return
         if (current.phase != Phase.ANSWERING) return
 
-        val answered = answerQuestion(current.session, index)
-        screenState = current.copy(
-            session = answered.session,
+        val answeredSession = answerQuestion(current.session, index)
+        internalState = current.copy(
+            session = answeredSession,
             phase = Phase.REVEALING,
             selectedIndex = index,
         )
-        publish()
 
         revealJob = viewModelScope.launch(dispatcherProvider.main) {
             delay(revealDurationMs)
@@ -72,86 +92,67 @@ class QuizViewModel @Inject constructor(
     }
 
     fun onSkip() {
-        val current = screenState ?: return
+        val current = internalState as? InternalState.Active ?: return
         if (current.phase != Phase.ANSWERING) return
 
         revealJob?.cancel()
-        screenState = ScreenState(session = skipQuestion(current.session))
-        publish()
+        internalState = InternalState.Active(session = skipQuestion(current.session))
     }
 
     fun onRestart() {
-        val current = screenState ?: return
+        val current = internalState as? InternalState.Active ?: return
         revealJob?.cancel()
-        screenState = ScreenState(session = restartQuiz(current.session))
-        publish()
+        internalState = InternalState.Active(session = restartQuiz(current.session))
     }
 
     private fun advanceToNext() {
-        val current = screenState ?: return
-        screenState = ScreenState(session = advanceQuiz(current.session))
-        publish()
+        val current = internalState as? InternalState.Active ?: return
+        internalState = InternalState.Active(session = advanceQuiz(current.session))
     }
 
     private fun loadQuestions() {
         revealJob?.cancel()
         viewModelScope.launch(dispatcherProvider.main) {
-            _uiState.value = QuizUiState.Loading
-            delay(LoadingScreenMinimumDurationMs)
-            when (val result = getQuestions()) {
-                is DataResult.Success -> {
-                    screenState = ScreenState(session = QuizSession(questions = result.data))
-                    publish()
-                }
-
-                is DataResult.Error -> {
-                    screenState = null
-                    _uiState.value = QuizUiState.Error(result.error.toUserMessage())
-                }
+            internalState = InternalState.Loading
+            val startedAtMs = System.currentTimeMillis()
+            val result = getQuestions()
+            val elapsedMs = System.currentTimeMillis() - startedAtMs
+            delay(remainingLoadingDelayMs(loadingMinDurationMs, elapsedMs))
+            internalState = when (result) {
+                is DataResult.Success -> InternalState.Active(session = restoreOrCreateSession(result.data))
+                is DataResult.Error -> InternalState.Error(result.error.toMessage())
             }
         }
     }
 
-    private fun publish() {
-        val current = screenState ?: return
-        _uiState.value = current.toUiState()
-    }
-
-    private fun ScreenState.toUiState(): QuizUiState {
-        if (session.isFinished) return QuizUiState.Finished(session.toResult())
-
-        val question = checkNotNull(session.currentQuestion)
-        val options = question.options.mapIndexed { index, text ->
-            OptionUi(text = text, state = optionState(index, question.correctIndex))
-        }
-
-        return QuizUiState.Question(
-            questionNumber = session.currentIndex + 1,
-            totalQuestions = session.total,
-            text = question.text,
-            options = options,
-            phase = phase,
-            currentStreak = session.currentStreak,
-            streakActive = session.isStreakActive,
+    private fun restoreOrCreateSession(questions: List<Question>): QuizSession {
+        val savedIndex = savedStateHandle.get<Int>(KeyCurrentIndex) ?: return QuizSession(questions = questions)
+        return QuizSession(
+            questions = questions,
+            currentIndex = savedIndex,
+            correctCount = savedStateHandle.get<Int>(KeyCorrectCount) ?: 0,
+            skippedCount = savedStateHandle.get<Int>(KeySkippedCount) ?: 0,
+            currentStreak = savedStateHandle.get<Int>(KeyCurrentStreak) ?: 0,
+            longestStreak = savedStateHandle.get<Int>(KeyLongestStreak) ?: 0,
         )
     }
 
-    private fun ScreenState.optionState(index: Int, correctIndex: Int): OptionState = when {
-        phase == Phase.ANSWERING -> OptionState.DEFAULT
-        index == correctIndex -> OptionState.CORRECT
-        index == selectedIndex -> OptionState.WRONG
-        else -> OptionState.DIMMED
+    private fun persistProgress(session: QuizSession) {
+        savedStateHandle[KeyCurrentIndex] = session.currentIndex
+        savedStateHandle[KeyCorrectCount] = session.correctCount
+        savedStateHandle[KeySkippedCount] = session.skippedCount
+        savedStateHandle[KeyCurrentStreak] = session.currentStreak
+        savedStateHandle[KeyLongestStreak] = session.longestStreak
+    }
+
+    private fun InternalState.toUiState(): QuizUiState = when (this) {
+        InternalState.Loading -> QuizUiState.Loading
+        is InternalState.Error -> QuizUiState.Error(message)
+        is InternalState.Active -> uiStateMapper(session, phase, selectedIndex)
     }
 
     override fun onCleared() {
         revealJob?.cancel()
         super.onCleared()
     }
-}
-
-private fun AppError.toUserMessage(): String = when (this) {
-    AppError.Network -> "Couldn't reach the network. Check your connection and try again."
-    AppError.ServerError -> "The server had a problem loading the quiz. Please try again."
-    is AppError.Mapping -> "The quiz data looks invalid: $reason"
-    is AppError.Unknown -> "Something went wrong. Please try again."
 }

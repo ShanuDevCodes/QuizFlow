@@ -12,4 +12,8 @@ object QuizPresentationModule {
     @Provides
     @RevealDurationMillis
     fun provideRevealDurationMillis(): Long = 1_000L
+
+    @Provides
+    @LoadingMinDurationMillis
+    fun provideLoadingMinDurationMillis(): Long = 600L
 }

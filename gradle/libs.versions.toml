@@ -21,7 +21,6 @@ turbine = "1.2.1"
 mockk = "1.14.4"
 truth = "1.4.4"
 robolectric = "4.16.1"
-screenshot = "0.0.1-alpha15"
 jacocoTool = "0.8.13"
 datastorePreferences = "1.1.7"
 lottieCompose = "6.7.1"
@@ -61,6 +60,7 @@ retrofit-converter-kotlinx-serialization = { group = "com.squareup.retrofit2", n
 okhttp-bom = { group = "com.squareup.okhttp3", name = "okhttp-bom", version.ref = "okhttp" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp" }
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor" }
+okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver3-junit4" }
 
 # Serialization / coroutines
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
@@ -87,4 +87,3 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
-compose-screenshot = { id = "com.android.compose.screenshot", version.ref = "screenshot" }

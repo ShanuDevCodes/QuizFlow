@@ -24,9 +24,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.shanu.quizflow.R
 import com.shanu.quizflow.core.ui.components.SkipButton
 import com.shanu.quizflow.core.ui.components.SpotlightSurface
 import com.shanu.quizflow.core.ui.components.StreakBadge
@@ -55,7 +57,7 @@ fun QuizSkeleton(modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Question 0 of 10",
+                text = stringResource(R.string.question_progress, 0, 10),
                 style = MaterialTheme.typography.labelLarge,
             )
             StreakBadge(currentStreak = 0, active = false)

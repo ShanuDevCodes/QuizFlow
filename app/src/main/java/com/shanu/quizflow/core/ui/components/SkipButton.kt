@@ -7,6 +7,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.shanu.quizflow.R
 
 @Composable
 fun SkipButton(
@@ -23,6 +25,6 @@ fun SkipButton(
             contentColor = MaterialTheme.colorScheme.onErrorContainer,
         ),
     ) {
-        Text("Skip")
+        Text(stringResource(R.string.skip_button))
     }
 }

@@ -7,8 +7,8 @@ with a restart option.
 
 Built to a deliberately high engineering bar — **Clean Architecture + MVVM + Repository pattern**,
 a **pure-Kotlin domain layer**, **feature-sliced packages**, **Material 3 Expressive** theming
-with dynamic color, and **broad automated test coverage** (138 tests across domain, data,
-ViewModel, and Compose UI).
+with dynamic color, and a broad test suite (150+ unit test methods across domain, data,
+ViewModel, and Compose UI, plus on-device instrumented tests for real touch/gesture input).
 
 ---
 
@@ -106,8 +106,9 @@ presentation ──▶ domain ◀── data
   advances immediately.
 - **Navigation** — Jetpack **Navigation 3** (`NavDisplay`) with a `Loading → Quiz → Results` back
   stack. The three screens share a single Activity-scoped `QuizViewModel`, so the session survives
-  the transition to Results and a restart resets the same owner. _(See `docs/audit.md` §4.3 for a
-  note on how this scoping actually resolves.)_
+  the transition to Results and a restart resets the same owner. `QuizFlowHost` carries a comment
+  explaining exactly how this scoping resolves (and the caveat against adding a per-entry
+  `ViewModelStore` decorator later, which would silently break it).
 
 ---
 
@@ -167,20 +168,21 @@ Run a single class:
 
 **What's tested** (fakes-first; MockK only where a fake is impractical):
 
-| Layer | Coverage |
+| Layer | What's covered |
 |---|---|
-| **Domain** (models, use cases, session/streak/scoring logic) | ~96–100% — exhaustive: correct/wrong/skip transitions, streak reset & longest-streak preservation, restart, result tallies |
-| **Data** (mapper, DTO serialization, repository, asset source) | Valid + malformed JSON, validation errors, network→asset fallback, error propagation |
-| **Presentation** (`QuizViewModel`) | ~98% — load success/error/retry, reveal → virtual-advance → next, skip cancels auto-advance, streak flag, finish & restart (coroutines-test + Turbine) |
-| **UI** (Compose via Robolectric) | Every screen + shared component: Loading/skeleton/error, Question render + tap/reveal/skip, progress bar segments, option states, streak badge, results stat rows, top bar + theme/dynamic-color toggles |
+| **Domain** (models, use cases, session/streak/scoring logic) | Correct/wrong/skip transitions, streak reset & longest-streak preservation, restart, result tallies |
+| **Data** (mapper, DTO serialization, repository, remote API, asset source) | Valid + malformed JSON, validation errors, network→asset fallback, error propagation, a real Retrofit+MockWebServer round-trip for the API call |
+| **Presentation** (`QuizViewModel`, `QuizUiStateMapper`, `AppErrorMessage`) | Load success/error/retry, reveal → virtual-advance → next, skip cancels auto-advance, streak flag, finish & restart, `SavedStateHandle` progress persistence/restore (coroutines-test + Turbine) |
+| **UI** (Compose via Robolectric, plus a couple of on-device instrumented tests) | Every screen + shared component: Loading/skeleton/error, Question render + tap/reveal/skip, progress bar segments, option states, streak badge, results stat rows, top bar + theme/dynamic-color toggles |
 
-**Coverage** (instruction level, via `jacocoTestReport`): **~71% overall**, with domain/use-case/
-mapper layers at **96–100%** and `QuizViewModel` ~98%. The lighter spots are intentional: thin
-wiring (Hilt DI modules, the Nav3 host, `MainActivity`, `QuizFlowApplication`) exercised in
-practice but not worth unit-testing in isolation.
-
-> A candid engineering review of the project — including remaining gaps and refinement
-> recommendations — lives in **[`docs/audit.md`](docs/audit.md)**.
+**Coverage** — run `./gradlew jacocoTestReport` and open
+`app/build/reports/jacoco/jacocoTestReport/html/index.html` for current numbers; they aren't
+pasted here because they drift every time a test or a source file changes and a stale number in a
+README is worse than no number. Domain (models/use cases) and the mapper are exercised
+exhaustively by design (every branch has a dedicated test — see the table above); the ViewModel
+and every screen/component have direct tests. The intentionally lighter spots are thin wiring
+(Hilt DI modules, the Nav3 host, `MainActivity`, `QuizFlowApplication`) — exercised in practice by
+every other test, but not worth unit-testing in isolation.
 
 ### Continuous integration
 
@@ -212,13 +214,15 @@ truth for "the tests pass."
 
 ### Known limitations (documented, not accidental)
 
-- **Process death** mid-quiz restarts from loading — `QuizSession` is not persisted to
-  `SavedStateHandle` (noted as a stretch goal in the PRD). The ViewModel does survive configuration
-  changes.
+- **Process death** mid-quiz restores question index, correct/skipped counts, and streaks via
+  `SavedStateHandle` — but not the individual answer records, and a process death landing exactly
+  inside the ~1s reveal window can double-count that one answer on restore. A full-fidelity restore
+  would need to persist the whole `QuizSession`; this covers the common case cheaply instead.
 - **Swipe** is one-directional (left-to-skip only); there is no "go back to a previous question"
   gesture.
-- **Screenshot tests** — the Compose Preview Screenshot plugin is wired but baselines are not yet
-  recorded (tracked in `docs/audit.md` §3.1).
+- **Screenshot tests** — the alpha (`0.0.1-alpha15`) Compose Preview Screenshot plugin was tried
+  and removed: it built and compiled `@Preview` composables under `screenshotTest/` but never
+  discovered them as runnable tests on this stack. Removed rather than left as dead wiring.
 
 ---
 

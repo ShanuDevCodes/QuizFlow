@@ -7,6 +7,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.shanu.quizflow.R
 
 @Composable
 fun DynamicColorToggleButton(
@@ -15,11 +17,9 @@ fun DynamicColorToggleButton(
     modifier: Modifier = Modifier,
 ) {
     val icon = if (enabled) Icons.Filled.Palette else Icons.Outlined.Palette
-    val description = if (enabled) {
-        "Dynamic wallpaper color on. Tap to switch to the app's default colors."
-    } else {
-        "App default colors active. Tap to switch to dynamic wallpaper color."
-    }
+    val description = stringResource(
+        if (enabled) R.string.dynamic_color_on_description else R.string.dynamic_color_off_description,
+    )
 
     IconButton(onClick = onClick, modifier = modifier) {
         Icon(imageVector = icon, contentDescription = description)
