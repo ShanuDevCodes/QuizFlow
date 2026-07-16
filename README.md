@@ -104,9 +104,7 @@ presentation ──▶ domain ◀── data
   advances immediately.
 - **Navigation** — Jetpack **Navigation 3** (`NavDisplay`) with a `Loading → Quiz → Results` back
   stack. The three screens share a single Activity-scoped `QuizViewModel`, so the session survives
-  the transition to Results and a restart resets the same owner. `QuizFlowHost` carries a comment
-  explaining exactly how this scoping resolves (and the caveat against adding a per-entry
-  `ViewModelStore` decorator later, which would silently break it).
+  the transition to Results and a restart resets the same owner.
 
 ---
 
