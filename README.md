@@ -1,11 +1,11 @@
 # QuizFlow
 
-A polished, single-player **multiple-choice quiz** app built for the *R0 – MCQ Quiz* take-home
+A polished, single-player **multiple-choice quiz** app
 assignment. QuizFlow loads 10 questions from a remote JSON gist (with an offline fallback),
 runs an animated quiz flow with answer reveal and streak tracking, and ends on a results screen
 with a restart option.
 
-Built to a deliberately high engineering bar — **Clean Architecture + MVVM + Repository pattern**,
+Built to scale — **Clean Architecture + MVVM + Repository pattern**,
 a **pure-Kotlin domain layer**, **feature-sliced packages**, **Material 3 Expressive** theming
 with dynamic color, and a broad test suite (150+ unit test methods across domain, data,
 ViewModel, and Compose UI, plus on-device instrumented tests for real touch/gesture input).
