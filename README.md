@@ -14,16 +14,13 @@ ViewModel, and Compose UI, plus on-device instrumented tests for real touch/gest
 
 ## 📸 Screenshots
 
-> _Screenshots will be added here. Drop the image files into `docs/screenshots/` using the
-> filenames below and they will render automatically._
-
 | Loading (shimmer) | Question | Answer revealed |
 |---|---|---|
-| ![Loading](docs/screenshots/01-loading.png) | ![Question](docs/screenshots/02-question.png) | ![Reveal](docs/screenshots/03-reveal.png) |
+| ![Loading](docs/screenshots/01-loading.jpg) | ![Question](docs/screenshots/02-question.jpg) | ![Reveal](docs/screenshots/03-reveal.jpg) |
 
 | Streak badge lit | Results | Light / Dark theme |
 |---|---|---|
-| ![Streak](docs/screenshots/04-streak.png) | ![Results](docs/screenshots/05-results.png) | ![Theme](docs/screenshots/06-theme.png) |
+| ![Streak](docs/screenshots/04-streak.jpg) | ![Results](docs/screenshots/05-results.jpg) | ![Theme](docs/screenshots/06-theme.jpg) |
 
 ## 🎬 Full walkthrough video
 
