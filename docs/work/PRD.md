@@ -2,7 +2,7 @@
 
 > **Assignment:** R0 – MCQ Quiz (DailyRounds take-home). Source spec: `~/Downloads/R0-Assignment.pdf`.
 > **Status:** In progress — Phase 0 (scaffolding) complete, including the theming system below. See `docs/work/PRD.md` §14 for what shipped vs. plan.
-> **Owner:** meghdut.mandal@autodesk.com · **Doubts contact (assignment):** samrat@dailyrounds.org
+> **Owner:** shanu.dev.codes@gmail.com · **Doubts contact (assignment):** samrat@dailyrounds.org
 
 ---
 
