@@ -27,7 +27,7 @@ ViewModel, and Compose UI, plus on-device instrumented tests for real touch/gest
 A full end-to-end screen recording of the app (load → answer/skip through all 10 → streak →
 results → restart, plus the theme/dynamic-color toggles) is available here:
 
-**▶️ [Watch the demo video](https://drive.google.com/PLACEHOLDER_REPLACE_WITH_YOUR_LINK)**
+**▶️ [Watch the demo video](https://drive.google.com/file/d/1NMEDiOv885GdOOtjfaZ4kp-uW2TYkDMa/view?usp=sharing)**
 
 > _Replace the link above with your Google Drive share link once the recording is uploaded
 > (set sharing to "Anyone with the link → Viewer")._
