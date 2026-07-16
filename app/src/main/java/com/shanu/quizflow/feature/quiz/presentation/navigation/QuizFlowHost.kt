@@ -12,6 +12,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.feature.quiz.presentation.loading.LoadingRouteScreen
 import com.shanu.quizflow.feature.quiz.presentation.quiz.QuizRouteScreen
+import com.shanu.quizflow.feature.quiz.presentation.quiz.QuizViewModel
 import com.shanu.quizflow.feature.quiz.presentation.results.ResultsRouteScreen
 
 @Composable

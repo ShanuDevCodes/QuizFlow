@@ -17,8 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import com.shanu.quizflow.R
 import com.shanu.quizflow.core.ui.theme.Dimens
 
 @Composable
@@ -29,6 +31,8 @@ fun StreakBadge(
 ) {
     val color = if (active) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     val containerColor = if (active) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceVariant
+    val descriptionRes = if (active) R.plurals.streak_badge_active_description else R.plurals.streak_badge_inactive_description
+    val description = pluralStringResource(descriptionRes, currentStreak, currentStreak)
 
     Surface(
         shape = RoundedCornerShape(percent = 50),
@@ -36,13 +40,7 @@ fun StreakBadge(
         modifier = modifier
             .height(Dimens.StreakBadgeContainerHeight)
             .width(Dimens.StreakBadgeContainerWidth)
-            .semantics {
-                contentDescription = if (active) {
-                    "Streak badge lit: $currentStreak correct answers in a row"
-                } else {
-                    "Streak: $currentStreak correct answers in a row"
-                }
-            },
+            .semantics { contentDescription = description },
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,

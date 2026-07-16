@@ -1,3 +1,39 @@
 <resources>
     <string name="app_name">QuizFlow</string>
+    <string name="results_title">Results</string>
+
+    <string name="error_network">Couldn\'t reach the network. Check your connection and try again.</string>
+    <string name="error_server">The server had a problem loading the quiz. Please try again.</string>
+    <string name="error_mapping">The quiz data looks invalid: %1$s</string>
+    <string name="error_unknown">Something went wrong. Please try again.</string>
+    <string name="retry_button">Retry</string>
+
+    <string name="question_progress">Question %1$d of %2$d</string>
+    <string name="skip_button">Skip</string>
+
+    <string name="option_correct_description">%1$s, correct answer</string>
+    <string name="option_wrong_description">%1$s, your answer, incorrect</string>
+
+    <plurals name="streak_badge_active_description">
+        <item quantity="one">Streak badge lit: %1$d correct answer in a row</item>
+        <item quantity="other">Streak badge lit: %1$d correct answers in a row</item>
+    </plurals>
+    <plurals name="streak_badge_inactive_description">
+        <item quantity="one">Streak: %1$d correct answer in a row</item>
+        <item quantity="other">Streak: %1$d correct answers in a row</item>
+    </plurals>
+
+    <string name="results_great_job">Great job!</string>
+    <string name="results_quiz_complete">Quiz complete</string>
+    <string name="stat_correct_label">Correct</string>
+    <string name="stat_correct_value">%1$d / %2$d</string>
+    <string name="stat_longest_streak_label">Longest streak</string>
+    <string name="stat_skipped_label">Skipped</string>
+    <string name="restart_quiz_button">Restart Quiz</string>
+
+    <string name="theme_light_description">Light theme active. Tap to switch to dark theme.</string>
+    <string name="theme_dark_description">Dark theme active. Tap to switch to automatic theme.</string>
+    <string name="theme_system_description">Automatic theme active. Tap to switch to light theme.</string>
+    <string name="dynamic_color_on_description">Dynamic wallpaper color on. Tap to switch to the app\'s default colors.</string>
+    <string name="dynamic_color_off_description">App default colors active. Tap to switch to dynamic wallpaper color.</string>
 </resources>

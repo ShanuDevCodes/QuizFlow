@@ -17,11 +17,10 @@ class AnswerQuestionUseCaseTest {
 
         val result = useCase(session, selectedIndex = 0) // correctIndex is 0 for all fixture questions
 
-        assertThat(result.isCorrect).isTrue()
-        assertThat(result.correctIndex).isEqualTo(0)
-        assertThat(result.session.correctCount).isEqualTo(1)
-        assertThat(result.session.currentStreak).isEqualTo(1)
-        assertThat(result.session.longestStreak).isEqualTo(1)
+        assertThat(result.records.last().outcome).isEqualTo(AnswerOutcome.CORRECT)
+        assertThat(result.correctCount).isEqualTo(1)
+        assertThat(result.currentStreak).isEqualTo(1)
+        assertThat(result.longestStreak).isEqualTo(1)
     }
 
     @Test
@@ -30,9 +29,9 @@ class AnswerQuestionUseCaseTest {
 
         val result = useCase(session, selectedIndex = 1) // wrong: correctIndex is 0
 
-        assertThat(result.isCorrect).isFalse()
-        assertThat(result.session.correctCount).isEqualTo(3)
-        assertThat(result.session.currentStreak).isEqualTo(0)
+        assertThat(result.records.last().outcome).isEqualTo(AnswerOutcome.WRONG)
+        assertThat(result.correctCount).isEqualTo(3)
+        assertThat(result.currentStreak).isEqualTo(0)
     }
 
     @Test
@@ -41,8 +40,8 @@ class AnswerQuestionUseCaseTest {
 
         val result = useCase(session, selectedIndex = 1) // wrong
 
-        assertThat(result.session.currentStreak).isEqualTo(0)
-        assertThat(result.session.longestStreak).isEqualTo(5)
+        assertThat(result.currentStreak).isEqualTo(0)
+        assertThat(result.longestStreak).isEqualTo(5)
     }
 
     @Test
@@ -51,17 +50,17 @@ class AnswerQuestionUseCaseTest {
 
         val result = useCase(session, selectedIndex = 0) // correct -> streak becomes 3
 
-        assertThat(result.session.currentStreak).isEqualTo(3)
-        assertThat(result.session.longestStreak).isEqualTo(3)
+        assertThat(result.currentStreak).isEqualTo(3)
+        assertThat(result.longestStreak).isEqualTo(3)
     }
 
     @Test
     fun `streak badge activates at exactly 3 consecutive correct answers`() {
         var session = sampleSession()
-        repeat(2) { session = useCase(session, selectedIndex = 0).session }
+        repeat(2) { session = useCase(session, selectedIndex = 0) }
         assertThat(session.isStreakActive).isFalse()
 
-        session = useCase(session, selectedIndex = 0).session
+        session = useCase(session, selectedIndex = 0)
 
         assertThat(session.currentStreak).isEqualTo(3)
         assertThat(session.isStreakActive).isTrue()
@@ -73,7 +72,7 @@ class AnswerQuestionUseCaseTest {
 
         val result = useCase(session, selectedIndex = 0)
 
-        assertThat(result.session.currentIndex).isEqualTo(session.currentIndex)
+        assertThat(result.currentIndex).isEqualTo(session.currentIndex)
     }
 
     @Test
@@ -82,12 +81,12 @@ class AnswerQuestionUseCaseTest {
         val questionId = session.currentQuestion!!.id
 
         val correct = useCase(session, selectedIndex = 0)
-        assertThat(correct.session.records).containsExactly(
+        assertThat(correct.records).containsExactly(
             AnswerRecord(questionId, 0, AnswerOutcome.CORRECT),
         )
 
         val wrong = useCase(session, selectedIndex = 2)
-        assertThat(wrong.session.records).containsExactly(
+        assertThat(wrong.records).containsExactly(
             AnswerRecord(questionId, 2, AnswerOutcome.WRONG),
         )
     }
@@ -111,7 +110,7 @@ class AnswerQuestionUseCaseTest {
         for (isCorrect in outcomes) {
             val selected = if (isCorrect) 0 else 1
             val result = useCase(session, selectedIndex = selected)
-            session = result.session.copy(currentIndex = session.currentIndex + 1)
+            session = result.copy(currentIndex = session.currentIndex + 1)
         }
 
         assertThat(session.correctCount).isEqualTo(7)

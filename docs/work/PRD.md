@@ -152,9 +152,9 @@ com.shanu.quizflow
 
 ### 5.3 State ownership & navigation
 
-- One `QuizViewModel` **scoped to the quiz nav graph** owns the `QuizSession` (single source of truth). Both `QuizScreen` and `ResultsScreen` observe it via `hiltViewModel()` scoped to the nav graph back stack entry, so session state (score, longest streak) survives the transition to results.
+- One `QuizViewModel` **shared across `Loading`/`Quiz`/`Results` via the enclosing Activity's `ViewModelStore`** owns the `QuizSession` (single source of truth). `QuizFlowHost`'s `NavDisplay` installs only `rememberSaveableStateHolderNavEntryDecorator()` — no `ViewModelStoreNavEntryDecorator` — so each route's `hiltViewModel()` call resolves to the same Activity-scoped instance rather than a per-back-stack-entry one. This is Activity scoping, not Navigation-3 graph scoping; see the KDoc on `QuizFlowHost` for the exact mechanism and the caveat against adding a per-entry `ViewModelStore` decorator later.
 - Navigation states: `Loading → Quiz → Results`, with `Restart` resetting the session and navigating back to `Quiz` at index 0.
-- Rationale over passing results as a nav arg: `Restart` needs to reset the same owning VM; graph-scoping keeps one owner and avoids duplicating session state. (Alternative — serialize `QuizResult` as a type-safe nav argument to a fully stateless results screen — is documented as a viable variant.)
+- Rationale over passing results as a nav arg: `Restart` needs to reset the same owning VM; Activity-scoping keeps one owner and avoids duplicating session state. (Alternative — serialize `QuizResult` as a type-safe nav argument to a fully stateless results screen — is documented as a viable variant.)
 
 ---
 

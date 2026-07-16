@@ -15,12 +15,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.shanu.quizflow.R
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.core.ui.components.QuizFlowTopBar
 import com.shanu.quizflow.core.ui.theme.Dimens
 import com.shanu.quizflow.core.ui.theme.QuizFlowTheme
+import com.shanu.quizflow.feature.quiz.presentation.quiz.AppErrorMessage
 import com.shanu.quizflow.feature.quiz.presentation.quiz.QuizUiState
 
 @Composable
@@ -37,7 +40,7 @@ fun LoadingScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             QuizFlowTopBar(
-                title = "QuizFlow",
+                title = stringResource(R.string.app_name),
                 themeMode = themeMode,
                 onToggleTheme = onToggleTheme,
                 dynamicColorEnabled = dynamicColorEnabled,
@@ -67,12 +70,15 @@ fun LoadingScreen(
                                 .size(48.dp)
                                 .padding(bottom = Dimens.SpaceMedium),
                         )
-                        Text(text = uiState.message)
+                        val messageText = uiState.message.formatArg?.let { arg ->
+                            stringResource(uiState.message.messageRes, arg)
+                        } ?: stringResource(uiState.message.messageRes)
+                        Text(text = messageText)
                         Button(
                             onClick = onRetry,
                             modifier = Modifier.padding(top = Dimens.SpaceMedium),
                         ) {
-                            Text("Retry")
+                            Text(stringResource(R.string.retry_button))
                         }
                     }
                 }
@@ -103,7 +109,7 @@ private fun LoadingScreenPreview() {
 private fun LoadingScreenErrorPreview() {
     QuizFlowTheme(dynamicColor = false) {
         LoadingScreen(
-            uiState = QuizUiState.Error("Couldn't reach the network. Check your connection and try again."),
+            uiState = QuizUiState.Error(AppErrorMessage(R.string.error_network)),
             themeMode = ThemeMode.SYSTEM,
             onToggleTheme = {},
             dynamicColorEnabled = false,

@@ -21,12 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import com.shanu.quizflow.R
 import com.shanu.quizflow.core.ui.theme.Dimens
 
 @Composable
@@ -39,6 +41,12 @@ fun OptionCard(
     val (containerColor, contentColor) = optionColors(option.state)
     val animatedContainerColor by animateColorAsState(containerColor, label = "optionContainerColor")
     val borderColor = optionBorderColor(option.state)
+    val accessibilityDescription = when (option.state) {
+        OptionState.CORRECT -> stringResource(R.string.option_correct_description, option.text)
+        OptionState.WRONG -> stringResource(R.string.option_wrong_description, option.text)
+        OptionState.DIMMED -> option.text
+        OptionState.DEFAULT -> null
+    }
 
     Surface(
         onClick = onClick,
@@ -55,7 +63,7 @@ fun OptionCard(
                 if (option.state == OptionState.CORRECT || option.state == OptionState.WRONG) {
                     liveRegion = LiveRegionMode.Polite
                 }
-                option.accessibilityDescription()?.let { contentDescription = it }
+                accessibilityDescription?.let { contentDescription = it }
             },
     ) {
         Row(
@@ -95,11 +103,4 @@ private fun optionIcon(state: OptionState) = when (state) {
     OptionState.CORRECT -> Icons.Filled.CheckCircle
     OptionState.WRONG -> Icons.Filled.Cancel
     else -> null
-}
-
-private fun OptionUi.accessibilityDescription(): String? = when (state) {
-    OptionState.CORRECT -> "$text, correct answer"
-    OptionState.WRONG -> "$text, your answer, incorrect"
-    OptionState.DIMMED -> "$text"
-    OptionState.DEFAULT -> null
 }

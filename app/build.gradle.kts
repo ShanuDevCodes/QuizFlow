@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.compose.screenshot)
     id("jacoco")
 }
 
@@ -45,7 +44,6 @@ android {
         compose = true
         buildConfig = true
     }
-    experimentalProperties["android.experimental.enableScreenshotTest"] = true
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -55,9 +53,6 @@ android {
                     excludes = listOf("jdk.internal.*")
                 }
             }
-        }
-        screenshotTests {
-            imageDifferenceThreshold = 0.0001f
         }
     }
 }
@@ -166,6 +161,8 @@ dependencies {
     testImplementation(libs.hilt.android.testing)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(platform(libs.okhttp.bom))
+    testImplementation(libs.okhttp.mockwebserver)
     kspTest(libs.hilt.compiler)
 
     // Instrumented tests

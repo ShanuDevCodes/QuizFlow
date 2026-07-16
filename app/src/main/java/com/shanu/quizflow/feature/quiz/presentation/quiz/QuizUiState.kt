@@ -5,7 +5,7 @@ import com.shanu.quizflow.feature.quiz.domain.model.QuizResult
 sealed interface QuizUiState {
     data object Loading : QuizUiState
 
-    data class Error(val message: String) : QuizUiState
+    data class Error(val message: AppErrorMessage) : QuizUiState
 
     data class Question(
         val questionNumber: Int,
