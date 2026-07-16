@@ -33,9 +33,6 @@ results → restart, plus the theme/dynamic-color toggles) is available here:
 
 **▶️ [Watch the demo video](https://drive.google.com/file/d/1NMEDiOv885GdOOtjfaZ4kp-uW2TYkDMa/view?usp=sharing)**
 
-> _Replace the link above with your Google Drive share link once the recording is uploaded
-> (set sharing to "Anyone with the link → Viewer")._
-
 ---
 
 ## ✨ Features
