@@ -29,10 +29,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.shanu.quizflow.core.ui.components.SkipButton
 import com.shanu.quizflow.core.ui.components.SpotlightSurface
+import com.shanu.quizflow.core.ui.components.StreakBadge
 import com.shanu.quizflow.core.ui.theme.Dimens
 import com.shanu.quizflow.core.ui.theme.QuizFlowTheme
 import com.shanu.quizflow.feature.quiz.presentation.quiz.QuestionProgressBar
-import com.shanu.quizflow.core.ui.components.StreakBadge
 
 private val QuestionCardSkeletonHeight = 140.dp
 

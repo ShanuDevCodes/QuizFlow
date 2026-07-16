@@ -29,7 +29,7 @@ The provided mockups (dark theme, streak flames, progress bar, green/red reveal,
 | F1 | **Launch & load** | On launch, fetch + parse JSON into `List<Question>`. Show a splash + loading indicator while data is prepared. Handle load failure with a retry. |
 | F2 | **Question screen** | Show current question text + exactly 4 options, and a "Question X of 10" progress indicator. |
 | F3 | **Answer reveal** | Tapping an option reveals both the correct answer and the user's selection (e.g. green = correct, red = wrong selection). Options become non-interactive after selection. |
-| F4 | **Auto-advance** | 2 seconds after an answer is revealed, advance to the next question automatically. |
+| F4 | **Auto-advance** | 1 second after an answer is revealed (matching the per-question progress-bar fill), advance to the next question automatically. |
 | F5 | **Skip** | Tapping "Skip" advances immediately to the next question (no reveal). |
 | F6 | **Streak tracking** | Track consecutive correct answers. At a streak of **3**, a streak badge "lights up" with an engaging micro-interaction. Any **wrong** answer resets the current streak to 0. |
 | F7 | **End of quiz** | After the 10th question, transition to a Results screen. |
@@ -71,8 +71,8 @@ These must be confirmed before/while implementing. Each is coded so it can be re
   - The mapper (§6.2) maps `correctOptionIndex → Question.correctIndex` directly, and still **validates** (exactly 4 options; `0 ≤ correctOptionIndex ≤ 3`) so malformed future data fails with a typed error rather than a crash.
 - **Q3 — Does "Skip" break the streak?** Spec only says *wrong* answers reset streak. A skip is not a correct answer, so it interrupts "consecutive correct". **Decision (documented):** Skip does **not** count as correct or wrong, increments `skipped`, and **resets current streak to 0** (streak = consecutive *correct*). Easily toggled if the reviewer expects otherwise.
 - **Q4 — Does "Total" in Correct/Total include skipped?** **Decision:** Total = 10 (all questions). Correct/Total = correct out of 10. Skipped shown separately.
-- **Q5 — Auto-advance on the 10th question** goes to Results (not a non-existent Q11). Reveal still shows for 2s, then Results.
-- **Q6 — Reveal duration** fixed at 2000 ms (constant, injected for tests so we can virtual-advance time).
+- **Q5 — Auto-advance on the 10th question** goes to Results (not a non-existent Q11). Reveal still shows for the 1s reveal duration, then Results.
+- **Q6 — Reveal duration** fixed at 1000 ms (constant, injected for tests so we can virtual-advance time; matches the per-question progress-bar fill).
 
 ---
 
@@ -197,7 +197,7 @@ data class QuizResult(
 
 - `answer(session, selectedIndex): AnsweredResult` — computes correct/wrong; if correct → `correctCount++`, `currentStreak++`, `longestStreak = max(longestStreak, currentStreak)`; if wrong → `currentStreak = 0`. Records the answer. **Does not** advance the index (reveal happens first). Returns the correct index + outcome for UI highlighting.
 - `skip(session): QuizSession` — `skippedCount++`, `currentStreak = 0` (see Q3), records a skip, advances index.
-- `advance(session): QuizSession` — `currentIndex++` (used after the 2s reveal).
+- `advance(session): QuizSession` — `currentIndex++` (used after the reveal duration elapses).
 - `result(session): QuizResult` — final tallies.
 - `restart(session): QuizSession` — fresh session with the same questions, all counters 0.
 
@@ -288,7 +288,7 @@ Guided by the installed `testing-setup` skill. **Fakes-first**; mock only when a
 
 ### 8.3 Presentation (JVM unit tests — coroutines-test + Turbine)
 - `QuizViewModel`: `Loading→Question` on success; `Loading→Error` on failure + retry recovers.
-- Option select → `REVEALING` with correct highlights; after virtual-advancing 2s → next `Question`; last question → `Finished`.
+- Option select → `REVEALING` with correct highlights; after virtual-advancing the reveal duration → next `Question`; last question → `Finished`.
 - Skip cancels pending auto-advance and advances immediately.
 - Streak flag flips to active at 3 and off after a wrong answer.
 - `Finished.result` matches expected tallies; `Restart` returns to first question with zeroed state.
@@ -346,15 +346,15 @@ Each phase is independently reviewable and ships with its own tests (test-alongs
 
 ## 12. Acceptance / Definition of Done
 
-- [ ] All of F1–F9, NF1–NF5 satisfied and demonstrable in the running app.
-- [ ] Clean Architecture boundaries hold (domain has no Android deps); MVVM + repository + feature slicing in place (E1).
-- [ ] Every use case, repository, mapper, ViewModel, and UI screen/component has tests; Jacoco report generated (E2).
-- [ ] R8 enabled for release; release build succeeds (E3).
-- [ ] Open questions §3 resolved (esp. real JSON URL/schema).
-- [ ] `README.md` documents architecture, how to build/run, how to run each test suite + coverage, and design decisions/assumptions.
-- [ ] Runs on min SDK 29 → target 36 (compileSdk 37); edge-to-edge verified (per `edge-to-edge` skill checklist).
-- [ ] Theme toggle (§13) works correctly and persists across restarts; verified against real Nav3 screens once Phase 4 lands (currently only wired into the Phase-0 placeholder).
-- [ ] CI green on PR (lint + unit tests + debug build) and on `master` (release gate).
+- [x] All of F1–F9, NF1–NF5 satisfied and demonstrable in the running app.
+- [x] Clean Architecture boundaries hold (domain has no Android deps); MVVM + repository + feature slicing in place (E1).
+- [x] Every use case, repository, mapper, ViewModel, and UI screen/component has tests; Jacoco report generated (E2). ~71% instruction coverage overall; domain/use-case/mapper layers 96–100%.
+- [x] R8 enabled for release; release build succeeds (E3). Verified via `./gradlew assembleRelease`.
+- [x] Open questions §3 resolved (esp. real JSON URL/schema).
+- [x] `README.md` documents architecture, how to build/run, how to run each test suite + coverage, and design decisions/assumptions.
+- [x] Runs on min SDK 29 → target 36 (compileSdk 37); edge-to-edge verified (per `edge-to-edge` skill checklist).
+- [x] Theme toggle (§13) works correctly and persists across restarts; verified against real Nav3 screens (wired into `QuizFlowTopBar`, used by Loading/Quiz/Results).
+- [ ] CI green on PR (lint + unit tests + debug build) and on `master` (release gate). Not independently re-verified this session after the redesign changes — check the latest Actions run before merging.
 
 ---
 
@@ -363,7 +363,7 @@ Each phase is independently reviewable and ships with its own tests (test-alongs
 Added mid-Phase-0 at explicit request, on top of the base assignment's design freedom ("reimagine the solution"). Treated as a genuine cross-cutting capability, not a quiz-feature concern — lives in `core/settings/`, not `feature/quiz/`.
 
 ### 13.1 Requirements
-- Use **dynamic (wallpaper-derived) color** on Android 12+ (`dynamicLightColorScheme`/`dynamicDarkColorScheme`), falling back to a fixed Purple Material3 palette below API 31.
+- Use **dynamic (wallpaper-derived) color** on Android 12+ (`dynamicLightColorScheme`/`dynamicDarkColorScheme`), falling back to the explicit "QuizFlow Expressive" (light) / "Earth & Ether" (dark) color roles below API 31 or when the user disables dynamic color.
 - Use **Material3 Expressive** (`MaterialExpressiveTheme`, `MotionScheme.expressive()`) instead of the classic `MaterialTheme`.
 - Give the user a way to force Light, force Dark, or follow System — **persisted** across app restarts.
 - Surfaced as a single cycling icon button (sun/moon/auto) in a top bar — user-chosen UI pattern over a dropdown or a dedicated settings sheet.
@@ -403,7 +403,7 @@ This bleeding-edge stack (AGP 9.3, alpha Compose BOM, Kotlin 2.2.10) surfaced se
 
 ## 15. Notes on process
 
-- **Version control:** repo is not yet `git init`-ed. Any git write (init/add/commit/branch/push) will be **proposed for approval first**; only read-only git is run without asking.
+- **Version control:** repo is git-initialized (branch `devlopment`, pushed to origin). Any invasive git write (reset/force-push/branch delete) is still **proposed for approval first**; routine add/commit/push proceeds when explicitly requested.
 - **Android skills:** `edge-to-edge`, `testing-setup`, `navigation-3`, `adaptive`, `r8-analyzer`, `android-intent-security`, `styles`, `agp-9-upgrade` are installed under `.claude/skills/` — consult the relevant one per phase (see `CLAUDE.md`). The `agp-9-upgrade` skill was added mid-Phase-0 specifically to resolve the built-in-Kotlin/KSP conflict (§14.4) rather than guessing at a fix.
 - **CI:** `.github/workflows/ci.yml` triggers on `master` (the repo's real default branch — confirmed via `git remote -v` / `gh repo view` after `git init`). Dev work happens on `devlopment` (branch name as chosen), merged to `master` via PR.
 - **Branching:** `devlopment` (typo in name is intentional/as-chosen) is the working branch; `master` tracks `origin/master` and is only advanced via PR merge.

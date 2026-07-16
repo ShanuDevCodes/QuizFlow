@@ -29,9 +29,6 @@ class MainActivity : ComponentActivity() {
             val dynamicColorEnabled by themeViewModel.dynamicColorEnabled.collectAsStateWithLifecycle()
             val darkTheme = resolveDarkTheme(themeMode)
 
-            // enableEdgeToEdge() in onCreate only reads the system's dark-mode config once;
-            // it doesn't react to this app's own Light/Dark/System preference, so re-apply it
-            // here whenever the effective theme changes.
             SideEffect {
                 enableEdgeToEdge(
                     statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme },

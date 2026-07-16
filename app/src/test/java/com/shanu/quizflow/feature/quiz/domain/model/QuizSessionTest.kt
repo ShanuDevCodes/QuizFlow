@@ -1,7 +1,6 @@
 package com.shanu.quizflow.feature.quiz.domain.model
 
 import com.google.common.truth.Truth.assertThat
-import com.shanu.quizflow.feature.quiz.domain.sampleQuestions
 import com.shanu.quizflow.feature.quiz.domain.sampleSession
 import org.junit.Test
 

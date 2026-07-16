@@ -66,7 +66,6 @@ class QuestionDtoSerializationTest {
             json.decodeFromString<QuestionDto>("{ not valid json")
             error("Expected a SerializationException")
         } catch (expected: SerializationException) {
-            // expected
         }
     }
 
@@ -77,7 +76,6 @@ class QuestionDtoSerializationTest {
             json.decodeFromString<QuestionDto>(raw)
             error("Expected a SerializationException")
         } catch (expected: SerializationException) {
-            // expected: "question" is required
         }
     }
 

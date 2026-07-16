@@ -5,9 +5,6 @@ import com.shanu.quizflow.feature.quiz.domain.model.AnswerRecord
 import com.shanu.quizflow.feature.quiz.domain.model.QuizSession
 import javax.inject.Inject
 
-/** Skipping advances immediately (no reveal): resets the streak and moves to the next question
- * in one step, unlike [AnswerQuestionUseCase] which defers advancing until after the reveal.
- */
 class SkipQuestionUseCase @Inject constructor() {
 
     operator fun invoke(session: QuizSession): QuizSession {

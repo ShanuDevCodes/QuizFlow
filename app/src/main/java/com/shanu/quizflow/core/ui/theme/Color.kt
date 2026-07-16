@@ -2,7 +2,6 @@ package com.shanu.quizflow.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ---- Light: "QuizFlow Expressive" ----
 val LightPrimary = Color(0xFF932E07)
 val LightOnPrimary = Color(0xFFFFFFFF)
 val LightPrimaryContainer = Color(0xFFB4451F)
@@ -39,7 +38,6 @@ val LightInverseOnSurface = Color(0xFFFFEDE8)
 val LightInversePrimary = Color(0xFFFFB59E)
 val LightScrim = Color(0xFF000000)
 
-// ---- Dark: "Earth & Ether" ----
 val DarkPrimary = Color(0xFFFFB4A5)
 val DarkOnPrimary = Color(0xFF611205)
 val DarkPrimaryContainer = Color(0xFFE2725B)

@@ -25,4 +25,9 @@ object Dimens {
 
     val SpotlightSize = 140.dp
     val SpotlightOffset = 40.dp
+
+    val StatIconContainerSize = 40.dp
+    val StatIconSize = 20.dp
+
+    val OptionIconSlotSize = 24.dp
 }

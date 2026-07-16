@@ -18,7 +18,6 @@ import com.shanu.quizflow.core.ui.theme.Dimens
 
 private const val SpotlightAlpha = 0.35f
 
-// Shared surfaceContainer card with a soft radial-gradient color accent bleeding in from the top-right corner.
 @Composable
 fun SpotlightSurface(
     modifier: Modifier = Modifier,

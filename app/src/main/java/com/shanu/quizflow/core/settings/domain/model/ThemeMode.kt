@@ -6,7 +6,6 @@ enum class ThemeMode {
     DARK,
     SYSTEM;
 
-    /** Cycling order used by the single-tap theme toggle: Light -> Dark -> System -> Light. */
     fun next(): ThemeMode = when (this) {
         LIGHT -> DARK
         DARK -> SYSTEM

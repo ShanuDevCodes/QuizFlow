@@ -59,10 +59,11 @@ class ResultsScreenTest {
     }
 
     @Test
-    fun `skipped row is hidden when nothing was skipped`() {
+    fun `skipped row is always shown, even when nothing was skipped`() {
         setContent(QuizResult(correct = 10, total = 10, skipped = 0, longestStreak = 10))
 
-        composeTestRule.onNodeWithText("Skipped").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Skipped").assertExists()
+        composeTestRule.onNodeWithText("0").assertExists()
     }
 
     @Test

@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val LoadingScreenMinimumDurationMs = 2_000L
+
 @HiltViewModel
 class QuizViewModel @Inject constructor(
     private val getQuestions: GetQuestionsUseCase,
@@ -95,6 +97,7 @@ class QuizViewModel @Inject constructor(
         revealJob?.cancel()
         viewModelScope.launch(dispatcherProvider.main) {
             _uiState.value = QuizUiState.Loading
+            delay(LoadingScreenMinimumDurationMs)
             when (val result = getQuestions()) {
                 is DataResult.Success -> {
                     screenState = ScreenState(session = QuizSession(questions = result.data))

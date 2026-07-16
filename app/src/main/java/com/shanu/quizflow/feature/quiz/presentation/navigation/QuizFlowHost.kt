@@ -1,5 +1,8 @@
 package com.shanu.quizflow.feature.quiz.presentation.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
@@ -21,9 +24,10 @@ fun QuizFlowHost(
 ) {
     val backStack = rememberNavBackStack(LoadingRoute)
 
+    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
     NavDisplay(
         backStack = backStack,
-        modifier = modifier,
+        modifier = Modifier.fillMaxSize(),
         entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator()),
         entryProvider = entryProvider {
             entry<LoadingRoute> {
@@ -64,4 +68,5 @@ fun QuizFlowHost(
             }
         },
     )
+    }
 }
