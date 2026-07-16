@@ -1,8 +1,11 @@
 package com.shanu.quizflow.feature.quiz.presentation.quiz
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,14 +32,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.core.ui.components.LottieCelebration
+import com.shanu.quizflow.core.ui.components.PopIn
 import com.shanu.quizflow.core.ui.components.QuizFlowTopBar
 import com.shanu.quizflow.core.ui.components.SkipButton
 import com.shanu.quizflow.core.ui.components.SpotlightSurface
 import com.shanu.quizflow.core.ui.components.StreakBadge
 import com.shanu.quizflow.core.ui.theme.Dimens
 import com.shanu.quizflow.core.ui.theme.QuizFlowTheme
+import kotlinx.coroutines.delay
 
 private val SwipeToSkipThreshold = 96.dp
+private const val QuestionExitDurationMs = 300
+private const val OptionRevealStaggerMs = 180L
+private const val InitialRevealDelayMs = 50L
 
 @Composable
 fun QuizScreen(
@@ -107,33 +117,54 @@ fun QuizScreen(
                     modifier = Modifier.padding(top = Dimens.SpaceSmall, bottom = Dimens.SpaceLarge),
                 )
 
-                @Suppress("UnusedContentLambdaTargetStateParameter")
                 AnimatedContent(
-                    targetState = state.questionNumber,
-                    transitionSpec = { fadeIn() togetherWith fadeOut() },
+                    targetState = state,
+                    contentKey = { it.questionNumber },
+                    transitionSpec = {
+                        fadeIn(animationSpec = tween(durationMillis = 1, delayMillis = QuestionExitDurationMs)) togetherWith
+                            (
+                                slideOutHorizontally(
+                                    animationSpec = tween(durationMillis = QuestionExitDurationMs, easing = FastOutLinearInEasing),
+                                    targetOffsetX = { fullWidth -> -fullWidth },
+                                ) + fadeOut(animationSpec = tween(durationMillis = QuestionExitDurationMs))
+                            ) using null
+                    },
                     label = "questionContent",
-                ) {
+                ) { questionState ->
+                    val revealedCount = remember { mutableIntStateOf(0) }
+                    LaunchedEffect(Unit) {
+                        delay(QuestionExitDurationMs.toLong())
+                        repeat(questionState.options.size + 1) { step ->
+                            delay(if (step == 0) InitialRevealDelayMs else OptionRevealStaggerMs)
+                            revealedCount.intValue = step + 1
+                        }
+                    }
+
                     Column {
-                        SpotlightSurface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = Dimens.SpaceLarge),
-                        ) {
-                            Text(
-                                text = state.text,
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(Dimens.SpaceMedium),
-                            )
+                        PopIn(visible = revealedCount.intValue >= 1) {
+                            SpotlightSurface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = Dimens.SpaceLarge),
+                            ) {
+                                Text(
+                                    text = questionState.text,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.padding(Dimens.SpaceMedium),
+                                )
+                            }
                         }
 
                         val optionSpacing = remember { Dimens.SpaceSmall }
-                        state.options.forEachIndexed { index, option ->
-                            OptionCard(
-                                option = option,
-                                onClick = { onOptionSelected(index) },
-                                modifier = Modifier.padding(bottom = optionSpacing),
-                            )
+                        questionState.options.forEachIndexed { index, option ->
+                            PopIn(visible = revealedCount.intValue >= index + 2) {
+                                OptionCard(
+                                    option = option,
+                                    onClick = { onOptionSelected(index) },
+                                    modifier = Modifier.padding(bottom = optionSpacing),
+                                )
+                            }
                         }
                     }
                 }

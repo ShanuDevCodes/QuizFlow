@@ -1,11 +1,5 @@
 package com.shanu.quizflow.feature.quiz.presentation.results
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,28 +8,42 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.core.ui.components.LottieCelebration
+import com.shanu.quizflow.core.ui.components.PopIn
 import com.shanu.quizflow.core.ui.components.QuizFlowTopBar
 import com.shanu.quizflow.core.ui.theme.Dimens
 import com.shanu.quizflow.core.ui.theme.QuizFlowTheme
 import com.shanu.quizflow.feature.quiz.domain.model.QuizResult
+import kotlinx.coroutines.delay
 
 private const val CelebrationScoreThreshold = 0.8f
+private const val RevealStaggerMs = 120L
+private const val RevealStepCount = 5
 
 @Composable
 fun ResultsScreen(
@@ -49,6 +57,14 @@ fun ResultsScreen(
 ) {
     val scoreFraction = remember(result) { if (result.total == 0) 0f else result.correct.toFloat() / result.total }
     val celebrate = scoreFraction >= CelebrationScoreThreshold
+
+    val revealedCount = remember(result) { mutableIntStateOf(0) }
+    LaunchedEffect(result) {
+        repeat(RevealStepCount) { step ->
+            delay(RevealStaggerMs)
+            revealedCount.intValue = step + 1
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
@@ -71,12 +87,7 @@ fun ResultsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                AnimatedVisibility(
-                    visible = true,
-                    enter = scaleIn(
-                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                    ) + fadeIn(animationSpec = tween()),
-                ) {
+                PopIn(visible = revealedCount.intValue >= 1) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         if (celebrate) {
                             Icon(
@@ -93,26 +104,52 @@ fun ResultsScreen(
                             style = MaterialTheme.typography.headlineMedium,
                             modifier = Modifier.padding(bottom = Dimens.SpaceLarge),
                         )
+                    }
+                }
 
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(Dimens.SpaceLarge)) {
-                                ResultRow(label = "Correct", value = "${result.correct} / ${result.total}")
-                                ResultRow(label = "Longest streak", value = result.longestStreak.toString())
-                                if (result.skipped > 0) {
-                                    ResultRow(label = "Skipped", value = result.skipped.toString())
-                                }
-                            }
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(Dimens.SpaceLarge)) {
+                        PopIn(visible = revealedCount.intValue >= 2) {
+                            StatRow(
+                                icon = Icons.Filled.CheckCircle,
+                                label = "Correct",
+                                value = "${result.correct} / ${result.total}",
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            )
+                        }
+                        HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.SpaceExtraSmall))
+                        PopIn(visible = revealedCount.intValue >= 3) {
+                            StatRow(
+                                icon = Icons.Filled.LocalFireDepartment,
+                                label = "Longest streak",
+                                value = result.longestStreak.toString(),
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                        }
+                        HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.SpaceExtraSmall))
+                        PopIn(visible = revealedCount.intValue >= 4) {
+                            StatRow(
+                                icon = Icons.Filled.SkipNext,
+                                label = "Skipped",
+                                value = result.skipped.toString(),
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            )
                         }
                     }
                 }
 
-                Button(
-                    onClick = onRestart,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = Dimens.SpaceExtraLarge),
-                ) {
-                    Text("Restart Quiz")
+                PopIn(visible = revealedCount.intValue >= 5, modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = onRestart,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Dimens.SpaceExtraLarge),
+                    ) {
+                        Text("Restart Quiz")
+                    }
                 }
             }
         }
@@ -127,14 +164,41 @@ fun ResultsScreen(
 }
 
 @Composable
-private fun ResultRow(label: String, value: String) {
+private fun StatRow(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    containerColor: Color,
+    contentColor: Color,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = Dimens.SpaceExtraSmall),
         horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodyLarge)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Surface(
+                shape = CircleShape,
+                color = containerColor,
+                modifier = Modifier.size(Dimens.StatIconContainerSize),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = contentColor,
+                        modifier = Modifier.size(Dimens.StatIconSize),
+                    )
+                }
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(start = Dimens.SpaceMedium),
+            )
+        }
         Text(text = value, style = MaterialTheme.typography.bodyLarge)
     }
 }

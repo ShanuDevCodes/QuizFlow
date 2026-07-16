@@ -4,9 +4,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.printToLog
 import com.google.common.truth.Truth.assertThat
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.core.ui.theme.QuizFlowTheme

@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     alias(libs.plugins.android.application)
@@ -47,6 +49,12 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            all {
+                it.extensions.configure<JacocoTaskExtension> {
+                    isIncludeNoLocationClasses = true
+                    excludes = listOf("jdk.internal.*")
+                }
+            }
         }
         screenshotTests {
             imageDifferenceThreshold = 0.0001f
@@ -66,6 +74,50 @@ ksp {
 
 jacoco {
     toolVersion = libs.versions.jacocoTool.get()
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
+    group = "Reporting"
+    description = "Generate a Jacoco HTML/XML coverage report for the debug unit tests."
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*",
+        "**/Hilt_*.class",
+        "**/*_Hilt*.class",
+        "**/*_Factory.class",
+        "**/*_MembersInjector.class",
+        "**/*Module_*Factory.class",
+        "**/dagger/**",
+        "**/*Companion*.*",
+        "**/ComposableSingletons\$*.*",
+        "**/*\$serializer.class",
+    )
+
+    val javaClasses = fileTree("${layout.buildDirectory.get()}/intermediates/javac/debug/classes") {
+        exclude(fileFilter)
+    }
+    val kotlinClasses = fileTree("${layout.buildDirectory.get()}/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") {
+        exclude(fileFilter)
+    }
+
+    classDirectories.setFrom(files(javaClasses, kotlinClasses))
+    sourceDirectories.setFrom(files("$projectDir/src/main/java"))
+    executionData.setFrom(
+        fileTree(layout.buildDirectory.get()) {
+            include("jacoco/testDebugUnitTest.exec")
+        },
+    )
 }
 
 dependencies {

@@ -63,7 +63,6 @@ class SkipQuestionUseCaseTest {
             useCase(finished)
             error("Expected IllegalStateException")
         } catch (expected: IllegalStateException) {
-            // expected: no current question to skip
         }
     }
 }

@@ -17,7 +17,6 @@ data class QuizSession(
     val total: Int get() = questions.size
     val isFinished: Boolean get() = currentIndex >= questions.size
 
-    /** Streak badge "lights up" once the user has 3+ consecutive correct answers. */
     val isStreakActive: Boolean get() = currentStreak >= STREAK_BADGE_THRESHOLD
 
     companion object {

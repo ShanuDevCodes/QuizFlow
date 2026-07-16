@@ -100,7 +100,6 @@ class AnswerQuestionUseCaseTest {
             useCase(finished, selectedIndex = 0)
             error("Expected IllegalStateException")
         } catch (expected: IllegalStateException) {
-            // expected: no current question to answer
         }
     }
 

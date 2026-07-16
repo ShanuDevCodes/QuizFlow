@@ -10,11 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 
-/**
- * Single-tap control that cycles [ThemeMode] Light -> Dark -> System -> Light.
- * Icon reflects the *current* mode; the content description states what tapping will do next,
- * so screen readers announce the resulting action rather than just the current state.
- */
 @Composable
 fun ThemeToggleButton(
     themeMode: ThemeMode,

@@ -28,7 +28,6 @@ class ThemeViewModel @Inject constructor(
     val dynamicColorEnabled: StateFlow<Boolean> = observeDynamicColorEnabled()
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    /** Cycles Light -> Dark -> System -> Light, per [ThemeMode.next]. */
     fun onToggleTheme() {
         viewModelScope.launch {
             setThemeMode(themeMode.value.next())
