@@ -10,6 +10,10 @@ a **pure-Kotlin domain layer**, **feature-sliced packages**, **Material 3 Expres
 with dynamic color, and a broad test suite (150+ unit test methods across domain, data,
 ViewModel, and Compose UI, plus on-device instrumented tests for real touch/gesture input).
 
+**📦 Want to try it without building?** Download the APK from the
+**[Releases](https://github.com/ShanuDevCodes/QuizFlow/releases/latest)** page and install it on
+an Android 10+ device.
+
 ---
 
 ## 📸 Screenshots
