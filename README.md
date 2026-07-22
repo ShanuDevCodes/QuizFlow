@@ -12,17 +12,17 @@ an Android 10+ device.
 
 ## 📸 Screenshots
 
-| Module List & Subjects | Overall Progress Summary | Quick Resume Bar |
+| Loading (shimmer) | Question View | Answer Revealed |
 |---|---|---|
-| ![Module List](docs/screenshots/01-module-list.jpg) | ![Progress Summary](docs/screenshots/02-progress-summary.jpg) | ![Quick Resume](docs/screenshots/03-quick-resume.jpg) |
+| ![Loading](docs/screenshots/01-loading.jpg) | ![Question](docs/screenshots/02-question.jpg) | ![Reveal](docs/screenshots/03-reveal.jpg) |
 
-| Question View | Answer Revealed | Streak Badge Lit |
+| Streak Badge Lit | Results & High Score | Light / Dark Theme |
 |---|---|---|
-| ![Question](docs/screenshots/04-question.jpg) | ![Reveal](docs/screenshots/05-reveal.jpg) | ![Streak](docs/screenshots/06-streak.jpg) |
+| ![Streak](docs/screenshots/04-streak.jpg) | ![Results](docs/screenshots/05-results.jpg) | ![Theme](docs/screenshots/06-theme.jpg) |
 
-| Results & High Score | Light / Dark Theme | Dynamic Color (Android 12+) |
+| Module List (Light Theme) | Module List (Dark Theme) | Module List (Not Started) |
 |---|---|---|
-| ![Results](docs/screenshots/07-results.jpg) | ![Theme](docs/screenshots/08-theme.jpg) | ![Dynamic Color](docs/screenshots/09-dynamic-color.jpg) |
+| ![Module List Light](docs/screenshots/07-module-list.png) | ![Module List Dark](docs/screenshots/08-module-list-dark.png) | ![Module List Fresh](docs/screenshots/09-module-list-fresh.png) |
 
 ## 🎬 Full walkthrough video
 
