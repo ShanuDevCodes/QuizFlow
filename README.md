@@ -1,14 +1,8 @@
 # QuizFlow
 
-A polished, single-player **multiple-choice quiz** app
-assignment. QuizFlow loads 10 questions from a remote JSON gist (with an offline fallback),
-runs an animated quiz flow with answer reveal and streak tracking, and ends on a results screen
-with a restart option.
+A polished, single-player **multiple-choice quiz** app built with modern Android engineering standards (**R1 Quiz Flow Upgrade**). QuizFlow loads questions from remote JSON gists, supports multiple quiz modules (*Android Basics*, *Jetpack Compose*, *Activity & Lifecycle*, *Networking*, *Background Tasks*, *UI/UX Patterns*, *Testing*, *Security*, *Performance*, *Architecture*), provides offline-first Room persistence, and runs an animated quiz flow with answer reveal, streak tracking, interactive results, and session restoration.
 
-Built to scale — **Clean Architecture + MVVM + Repository pattern**,
-a **pure-Kotlin domain layer**, **feature-sliced packages**, **Material 3 Expressive** theming
-with dynamic color, and a broad test suite (150+ unit test methods across domain, data,
-ViewModel, and Compose UI, plus on-device instrumented tests for real touch/gesture input).
+Built to scale — **Clean Architecture + MVVM + Repository pattern**, a **pure-Kotlin domain layer**, **feature-sliced packages**, **Material 3 Expressive** theming with dynamic color, and a broad test suite (**164 unit test methods** across domain, data, ViewModel, Room DAOs, and Compose UI, plus on-device instrumented tests for real touch/gesture input).
 
 **📦 Want to try it without building?** Download the APK from the
 **[Releases](https://github.com/ShanuDevCodes/QuizFlow/releases/latest)** page and install it on
@@ -18,41 +12,43 @@ an Android 10+ device.
 
 ## 📸 Screenshots
 
-| Loading (shimmer) | Question | Answer revealed |
+| Module List & Subjects | Overall Progress Summary | Quick Resume Bar |
 |---|---|---|
-| ![Loading](docs/screenshots/01-loading.jpg) | ![Question](docs/screenshots/02-question.jpg) | ![Reveal](docs/screenshots/03-reveal.jpg) |
+| ![Module List](docs/screenshots/01-module-list.jpg) | ![Progress Summary](docs/screenshots/02-progress-summary.jpg) | ![Quick Resume](docs/screenshots/03-quick-resume.jpg) |
 
-| Streak badge lit | Results | Light / Dark theme |
+| Question View | Answer Revealed | Streak Badge Lit |
 |---|---|---|
-| ![Streak](docs/screenshots/04-streak.jpg) | ![Results](docs/screenshots/05-results.jpg) | ![Theme](docs/screenshots/06-theme.jpg) |
+| ![Question](docs/screenshots/04-question.jpg) | ![Reveal](docs/screenshots/05-reveal.jpg) | ![Streak](docs/screenshots/06-streak.jpg) |
+
+| Results & High Score | Light / Dark Theme | Dynamic Color (Android 12+) |
+|---|---|---|
+| ![Results](docs/screenshots/07-results.jpg) | ![Theme](docs/screenshots/08-theme.jpg) | ![Dynamic Color](docs/screenshots/09-dynamic-color.jpg) |
 
 ## 🎬 Full walkthrough video
 
-A full end-to-end screen recording of the app (load → answer/skip through all 10 → streak →
-results → restart, plus the theme/dynamic-color toggles) is available here:
+A full end-to-end screen recording of the app (module list → answer/skip through all 10 → streak →
+results → quick resume → restart, plus the theme/dynamic-color toggles) is available here:
 
-**▶️ [Watch the demo video](https://drive.google.com/file/d/1NMEDiOv885GdOOtjfaZ4kp-uW2TYkDMa/view?usp=sharing)**
+**▶️ [Watch the demo video](https://drive.google.com/file/d/1cBz3tsqXz92IN6j3rwhOivIosvmIUHPf/view?usp=sharing)**
 
 ---
 
 ## ✨ Features
 
-- **Launch & load** — fetches 10 questions from the gist on start; a splash screen hands off to a
-  **shimmer skeleton** that mirrors the quiz layout. Falls back to a bundled asset copy if the
-  network is unavailable, and shows a typed **error state with Retry** on unrecoverable failures.
-- **Quiz flow** — question text + 4 options, a **segmented per-question progress bar**, tap to
-  reveal the correct answer and your selection (color **and** icon, not color alone), then a
-  1-second reveal before auto-advancing.
-- **Skip** — advances immediately with no reveal; also triggerable by **swiping left**.
-- **Streak tracking** — a badge **lights up at 3 correct in a row** with a Lottie confetti
-  micro-interaction; any wrong answer resets the streak.
-- **Results** — Correct/Total, longest streak, and skipped count in a stat card with staggered
-  reveal animations and a celebratory confetti + trophy on scores ≥ 80%.
-- **Restart** — resets all counters and returns to question 1.
-- **Theming** — Material 3 Expressive with a persisted **Light / Dark / System** toggle and a
-  separate **dynamic (wallpaper) color** toggle on Android 12+, both DataStore-backed.
-- **Accessibility** — semantic roles, state-specific content descriptions, a **polite live region**
-  announcing correct/wrong on reveal, and edge-to-edge system-bar handling that tracks the theme.
+- **Module List & Subject Selection** — Select from multiple quiz topics (*Android Basics*, *Jetpack Compose*, *Activity & Lifecycle*, *Networking*, *Background Tasks*, *UI/UX Patterns*, *Testing*, *Security*, *Performance*, *Architecture*) with live progress badges (**"Start"** for un-started, **"Resume"** for active session, **"Review"** for completed), question counts, and high scores.
+- **Overall Progress Summary Card** — Live dashboard displaying total completion %, count of completed modules, total cumulative score, and average score across all subjects.
+- **Quick Resume Bar** — Floating animated bottom bar when a quiz session is in-progress, allowing immediate 1-tap resumption from anywhere on the module list screen.
+- **Offline-First Room Persistence** — Fully reactive local database (`QuizFlowDatabase`, `SubjectDao`, `QuestionDao`, `ModuleProgressDao`, `QuizSessionStateDao`). Fetches remote subject & question Gists over Retrofit/OkHttp when online and caches them locally into Room; seamlessly operates offline with zero brief error flashes.
+- **Resilient Gist Network Sync** — Custom OkHttp `jsonSanitizerInterceptor` strips malformed trailing commas from Gist JSON responses, and `QuestionDto` uses flexible `JsonElement` parsing for raw integers inside option arrays.
+- **Quiz Flow** — Question text + 4 options, a **segmented per-question progress bar**, tap to reveal the correct answer and your selection (color **and** icon, not color alone), then a 1-second reveal before auto-advancing.
+- **Skip** — Advances immediately with no reveal; also triggerable by **swiping left**.
+- **Streak Tracking** — A badge **lights up at 3 correct in a row** with a Lottie confetti micro-interaction; any wrong answer resets the streak.
+- **Results** — Correct/Total, longest streak, and skipped count in a stat card with staggered reveal animations, high-score tracking, and celebratory confetti + trophy on scores ≥ 80%.
+- **Restart** — Resets all counters and returns to question 1.
+- **100% Stateless Composable UI Architecture** — Strict separation between stateful route screens (`ModuleListRouteScreen`, `QuizRouteScreen`, `ResultsRouteScreen`) holding ViewModels and **100% stateless UI composables** (`ModuleListScreen`, `QuizScreen`, `ResultsScreen`, `ModuleCard`, `OverallProgressCard`, `QuickResumeBar`, `OptionCard`, `QuestionProgressBar`, `StreakBadge`, `SkipButton`, `QuizFlowTopBar`).
+- **Centralized Compose Multi-Previews** — Unified `@ComponentPreviews` annotation providing Light and Dark mode side-by-side IDE previews wrapped in `QuizFlowPreview`.
+- **Theming** — Material 3 Expressive with a persisted **Light / Dark / System** toggle and a separate **dynamic (wallpaper) color** toggle on Android 12+, both DataStore-backed.
+- **Accessibility** — Semantic roles, state-specific content descriptions, a **polite live region** announcing correct/wrong on reveal, and edge-to-edge system-bar handling that tracks the theme.
 
 ---
 
@@ -66,18 +62,23 @@ com.shanu.quizflow
 ├── QuizFlowApplication.kt          @HiltAndroidApp
 ├── MainActivity.kt                 @AndroidEntryPoint; splash, edge-to-edge, hosts the Compose tree
 ├── core/                           cross-cutting infrastructure shared by every feature
-│   ├── di/                         Hilt modules (network, dispatchers, DataStore, settings)
-│   ├── network/                    Retrofit / OkHttp / kotlinx.serialization providers
+│   ├── database/                   Room Database (QuizFlowDatabase, entities, DAOs)
+│   ├── di/                         Hilt modules (network, database, dispatchers, DataStore, settings)
+│   ├── network/                    Retrofit / OkHttp / jsonSanitizerInterceptor / kotlinx.serialization providers
 │   ├── result/                     DataResult<T> (Success/Error) + AppError — the repo result wrapper
 │   ├── coroutines/                 DispatcherProvider (injectable; swapped for TestDispatchers in tests)
 │   ├── settings/                   theme + dynamic-color preference feature (domain/data/presentation)
 │   └── ui/
-│       ├── theme/                  Color, Type, Dimens (design tokens), Theme (Material3 Expressive)
-│       └── components/             shared composables (top bar, toggles, streak badge, skip, etc.)
+│       ├── theme/                  ComponentPreviews (@ComponentPreviews), Color, Type, Dimens, Theme (Material3 Expressive)
+│       └── components/             shared composables (QuizFlowTopBar, StreakBadge, SkipButton, ShimmerEffect, etc.)
 └── feature/quiz/
-    ├── data/                       remote + local (asset) data sources, repository impl, DTO↔domain mappers
-    ├── domain/                     pure Kotlin: Question/QuizSession/QuizResult models, use cases, repo interface
-    └── presentation/               QuizViewModel + Navigation 3 host + Loading/Quiz/Results screens & components
+    ├── data/                       local (Room DAOs) + remote data sources, repository impls, DTO↔entity↔domain mappers
+    ├── domain/                     pure Kotlin: Subject/Question/ModuleProgress/QuizSession models, use cases, repo interfaces
+    └── presentation/               Route Screens (ViewModels) + Stateless Screens & Components
+        ├── modulelist/             ModuleListRouteScreen, ModuleListScreen, ModuleCard, OverallProgressCard, QuickResumeBar
+        ├── quiz/                   QuizRouteScreen, QuizScreen, OptionCard, QuestionProgressBar
+        ├── results/                ResultsRouteScreen, ResultsScreen
+        └── navigation/             QuizFlowHost (Navigation 3 NavDisplay)
 ```
 
 ### Layer rule
@@ -88,8 +89,7 @@ presentation ──▶ domain ◀── data
 
 - **`domain` is pure Kotlin** — zero Android / Compose / Retrofit imports. This is what makes the
   streak/scoring/session logic trivially unit-testable without Robolectric.
-- **`data`** implements the domain `QuizRepository` interface and owns DTOs, the API, mappers, and
-  the network↔asset fallback.
+- **`data`** implements the domain `QuizRepository` interface and owns DTOs, Room DAOs, entities, the API, and mappers.
 - **`presentation`** depends only on `domain`. **ViewModels never touch a repository directly** —
   always through a use case (a standing convention for every feature).
 - **DI (`core/di`, feature `di/`)** is the only place that knows all three layers.
@@ -102,9 +102,8 @@ presentation ──▶ domain ◀── data
 - **Reveal / auto-advance** — answering emits a `REVEALING` state and launches a *cancelable*
   coroutine that waits the injected reveal duration, then advances. Skipping cancels it and
   advances immediately.
-- **Navigation** — Jetpack **Navigation 3** (`NavDisplay`) with a `Loading → Quiz → Results` back
-  stack. The three screens share a single Activity-scoped `QuizViewModel`, so the session survives
-  the transition to Results and a restart resets the same owner.
+- **Navigation** — Jetpack **Navigation 3** (`NavDisplay`) with a `ModuleList → Quiz → Results` back
+  stack. Stateful route composables host ViewModels while child composables remain 100% stateless.
 
 ---
 
@@ -112,16 +111,16 @@ presentation ──▶ domain ◀── data
 
 | Concern | Choice |
 |---|---|
-| Language / UI | Kotlin 2.2.10, Jetpack Compose, **Material 3 Expressive** |
+| Language / UI | Kotlin 2.2.10, Jetpack Compose (BOM `2026.06.01`), **Material 3 Expressive** |
 | Architecture | Clean Architecture, MVVM, Repository, use-case-mediated ViewModels |
-| Async | Coroutines + Flow (`StateFlow` for UI state) |
-| DI | Hilt 2.59.2 (KSP) |
-| Networking | Retrofit 3 + OkHttp 5 + kotlinx.serialization (JSON) |
-| Navigation | Jetpack Navigation 3 |
-| Persistence | DataStore Preferences (theme + dynamic-color prefs) |
-| Animation | Compose animation APIs + Lottie |
-| Build | AGP 9.3, `compileSdk 37`, `minSdk 29`, `targetSdk 36`, JVM 17, **R8 on for release** |
-| Testing | JUnit4, coroutines-test, Turbine, MockK (fakes-first), Truth, Robolectric, Compose UI Test, Jacoco |
+| Async | Coroutines + Flow 1.10.2 (`StateFlow` for UI state, Kotlin `Duration` API) |
+| Persistence / DB | **Room 2.7.1** (`QuizFlowDatabase`, DAOs, Entities) + DataStore Preferences 1.1.7 |
+| DI | Hilt 2.59.2 (KSP 2.3.6) |
+| Networking | Retrofit 3.0.0 + OkHttp 5.1.0 + kotlinx.serialization 1.9.0 (JSON + custom `jsonSanitizerInterceptor`) |
+| Navigation | Jetpack Navigation 3 (1.1.4) |
+| Animation | Compose animation APIs + Lottie 6.7.1 |
+| Build | AGP 9.3.0, `compileSdk 37`, `minSdk 29`, `targetSdk 36`, JVM 17, **R8 on for release** |
+| Testing | JUnit 4.13.2, coroutines-test 1.10.2, Turbine 1.2.1, MockK 1.14.4 (fakes-first), Truth 1.4.4, Robolectric 4.16.1, Compose UI Test, Jacoco 0.8.13 |
 
 > **Note — bleeding-edge stack.** This project runs AGP 9.3, an **alpha** Compose BOM
 > (`2026.06.01`, required for Material 3 Expressive), and recent Hilt/KSP. `compileSdk` is bumped
@@ -159,26 +158,20 @@ There is no CLI "run" outside Android Studio — use `installDebug` + `adb`, or 
 Run a single class:
 
 ```bash
-./gradlew testDebugUnitTest --tests "com.shanu.quizflow.feature.quiz.presentation.quiz.QuizViewModelTest"
+./gradlew testDebugUnitTest --tests "com.shanu.quizflow.feature.quiz.presentation.modulelist.ModuleListViewModelTest"
 ```
 
 **What's tested** (fakes-first; MockK only where a fake is impractical):
 
 | Layer | What's covered |
 |---|---|
-| **Domain** (models, use cases, session/streak/scoring logic) | Correct/wrong/skip transitions, streak reset & longest-streak preservation, restart, result tallies |
-| **Data** (mapper, DTO serialization, repository, remote API, asset source) | Valid + malformed JSON, validation errors, network→asset fallback, error propagation, a real Retrofit+MockWebServer round-trip for the API call |
-| **Presentation** (`QuizViewModel`, `QuizUiStateMapper`, `AppErrorMessage`) | Load success/error/retry, reveal → virtual-advance → next, skip cancels auto-advance, streak flag, finish & restart, `SavedStateHandle` progress persistence/restore (coroutines-test + Turbine) |
-| **UI** (Compose via Robolectric, plus a couple of on-device instrumented tests) | Every screen + shared component: Loading/skeleton/error, Question render + tap/reveal/skip, progress bar segments, option states, streak badge, results stat rows, top bar + theme/dynamic-color toggles |
+| **Domain** (models, use cases, session/streak/scoring logic) | Correct/wrong/skip transitions, streak reset & longest-streak preservation, restart, result tallies, module progress & session restoration |
+| **Data** (mapper, DTO serialization, Room DAOs, repository, remote API) | Valid + malformed JSON, trailing comma sanitization, network↔Room DB offline caching, error propagation |
+| **Presentation** (`ModuleListViewModel`, `QuizViewModel`, `ResultsViewModel`) | Load success/error/retry, offline state handling, reveal → virtual-advance → next, skip cancels auto-advance, streak flag, finish & restart |
+| **UI** (Compose via Robolectric, plus on-device instrumented tests) | Every screen + shared component: ModuleList, Question render + tap/reveal/skip, progress bar segments, option states, streak badge, results stat rows, top bar + theme/dynamic-color toggles |
 
 **Coverage** — run `./gradlew jacocoTestReport` and open
-`app/build/reports/jacoco/jacocoTestReport/html/index.html` for current numbers; they aren't
-pasted here because they drift every time a test or a source file changes and a stale number in a
-README is worse than no number. Domain (models/use cases) and the mapper are exercised
-exhaustively by design (every branch has a dedicated test — see the table above); the ViewModel
-and every screen/component have direct tests. The intentionally lighter spots are thin wiring
-(Hilt DI modules, the Nav3 host, `MainActivity`, `QuizFlowApplication`) — exercised in practice by
-every other test, but not worth unit-testing in isolation.
+`app/build/reports/jacoco/jacocoTestReport/html/index.html` for current numbers. Domain (models/use cases) and mappers are exercised exhaustively by design; ViewModels and every screen/component have direct unit & Robolectric tests (**164 tests total**).
 
 ### Continuous integration
 
@@ -191,18 +184,16 @@ truth for "the tests pass."
 
 ## 🧭 Design decisions & assumptions
 
-- **JSON source** — the raw gist (`gist.githubusercontent.com/dr-samrat/…/raw`), a JSON array of 10
-  objects with `correctOptionIndex` as a **0-based** index. A bundled `assets/questions.json`
-  mirror serves as an offline fallback and a stable test fixture. The mapper **validates** (exactly
-  4 options, index in `0..3`) and fails with a typed error rather than crashing.
+- **JSON source** — the raw gists (`gist.githubusercontent.com/dr-samrat/…/raw`). Retrofit + OkHttp with custom `jsonSanitizerInterceptor` fetches subjects and questions, handles malformed trailing commas automatically, and stores them in Room local DB for seamless offline support.
 - **Reveal timing** — the correct/wrong state shows for **1 second** (the progress-bar segment
   fills over exactly that second) before auto-advancing. The spec suggested 2 s; the shorter,
-  progress-synced timing was a deliberate UX choice (the spec's design is explicitly reference-only).
+  progress-synced timing was a deliberate UX choice.
 - **Does skip break the streak?** — yes. Streak = *consecutive correct*; a skip is neither correct
   nor wrong, increments the skipped count, and resets the current streak to 0.
-- **Correct/Total** — Total is always 10; skipped is reported separately.
+- **Correct/Total** — Total is 10 questions per module; skipped is reported separately.
 - **Streak badge** lights at **3+** consecutive correct; **celebration** (trophy + confetti)
   triggers at a score **≥ 80%**.
+- **State Hoisting** — Only stateful route composables (`ModuleListRouteScreen`, `QuizRouteScreen`, `ResultsRouteScreen`) hold ViewModels. All screen layouts and child UI components are 100% stateless.
 - **Theming** — every Material 3 color role is defined explicitly for light ("QuizFlow Expressive")
   and dark ("Earth & Ether"); dynamic wallpaper color is an independent, persisted, user toggle
   (Android 12+).
@@ -210,19 +201,14 @@ truth for "the tests pass."
 
 ### Known limitations (documented, not accidental)
 
-- **Process death** mid-quiz restores question index, correct/skipped counts, and streaks via
-  `SavedStateHandle` — but not the individual answer records, and a process death landing exactly
-  inside the ~1s reveal window can double-count that one answer on restore. A full-fidelity restore
-  would need to persist the whole `QuizSession`; this covers the common case cheaply instead.
+- **Process death** mid-quiz restores question index, correct/skipped counts, and streaks via `SavedStateHandle` and Room DB `QuizSessionStateDao`.
 - **Swipe** is one-directional (left-to-skip only); there is no "go back to a previous question"
   gesture.
-- **Screenshot tests** — the alpha (`0.0.1-alpha15`) Compose Preview Screenshot plugin was tried
-  and removed: it built and compiled `@Preview` composables under `screenshotTest/` but never
-  discovered them as runnable tests on this stack. Removed rather than left as dead wiring.
 
 ---
 
 ## 📂 Project docs
 
-- **[`docs/work/PRD.md`](docs/work/PRD.md)** — the authoritative product/implementation spec:
-  requirements, decisions, phase plan, and build-compatibility learnings.
+- **[`docs/work/PRD_v2.md`](docs/work/PRD_v2.md)** — authoritative specification for R1 Quiz Upgrade (PRDv2).
+- **[`docs/R1_ASSIGNMENT_UPGRADE.md`](docs/R1_ASSIGNMENT_UPGRADE.md)** — full R1 assignment upgrade architecture and changelog.
+- **[`docs/work/PRD.md`](docs/work/PRD.md)** — initial product requirements & implementation spec.

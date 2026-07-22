@@ -30,10 +30,37 @@
     <string name="stat_longest_streak_label">Longest streak</string>
     <string name="stat_skipped_label">Skipped</string>
     <string name="restart_quiz_button">Restart Quiz</string>
+    <string name="finish_button">Finish</string>
+
+    <!-- Review Screen -->
+    <string name="review_title">Module Performance</string>
+    <string name="review_heading">Module Summary</string>
+    <string name="stat_last_score_label">Last Score</string>
+    <string name="stat_high_score_label">Highest Score</string>
+    <string name="back_to_modules">Back to Modules</string>
+    <string name="retake_quiz_button">Retake Quiz</string>
 
     <string name="theme_light_description">Light theme active. Tap to switch to dark theme.</string>
     <string name="theme_dark_description">Dark theme active. Tap to switch to automatic theme.</string>
     <string name="theme_system_description">Automatic theme active. Tap to switch to light theme.</string>
     <string name="dynamic_color_on_description">Dynamic wallpaper color on. Tap to switch to the app\'s default colors.</string>
     <string name="dynamic_color_off_description">App default colors active. Tap to switch to dynamic wallpaper color.</string>
+
+    <!-- Module List -->
+    <string name="module_list_title">Quiz Modules</string>
+    <string name="module_status_start">Start</string>
+    <string name="module_status_review">Review</string>
+    <string name="module_status_resume">Resume</string>
+    <string name="module_progress_summary">%1$d Questions | Score: %2$d/%3$d</string>
+    <string name="module_progress_not_started">%1$d Questions</string>
+    <string name="module_high_score">High Score: %1$d/%2$d</string>
+    <string name="module_list_empty">No modules available</string>
+    <string name="module_list_sync_error">Couldn\'t load modules. Check your connection.</string>
+    <string name="quick_resume_title">ACTIVE SESSION</string>
+    <string name="overall_progress_heading">YOUR PROGRESS</string>
+    <string name="overall_progress_greeting">Keep it up!</string>
+    <string name="overall_progress_tag">OVERALL</string>
+    <string name="progress_modules_label">MODULES</string>
+    <string name="progress_total_score_uppercase">TOTAL SCORE</string>
+    <string name="progress_avg_score_uppercase">AVG SCORE</string>
 </resources>

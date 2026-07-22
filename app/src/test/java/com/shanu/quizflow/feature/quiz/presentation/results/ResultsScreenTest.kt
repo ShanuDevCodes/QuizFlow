@@ -1,5 +1,6 @@
 package com.shanu.quizflow.feature.quiz.presentation.results
 
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -18,7 +19,11 @@ class ResultsScreenTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    private fun setContent(result: QuizResult, onRestart: () -> Unit = {}) {
+    private fun setContent(
+        result: QuizResult,
+        onFinish: () -> Unit = {},
+        onRestart: () -> Unit = {},
+    ) {
         composeTestRule.setContent {
             QuizFlowTheme(dynamicColor = false) {
                 ResultsScreen(
@@ -27,10 +32,12 @@ class ResultsScreenTest {
                     onToggleTheme = {},
                     dynamicColorEnabled = false,
                     onToggleDynamicColor = {},
+                    onFinish = onFinish,
                     onRestart = onRestart,
                 )
             }
         }
+        composeTestRule.mainClock.advanceTimeBy(1000L)
     }
 
     @Test
@@ -67,11 +74,31 @@ class ResultsScreenTest {
     }
 
     @Test
+    fun `tapping Finish invokes the callback`() {
+        var finished = false
+        setContent(
+            result = QuizResult(correct = 4, total = 10, skipped = 2, longestStreak = 2),
+            onFinish = { finished = true },
+        )
+
+        val node = composeTestRule.onNodeWithText("Finish").fetchSemanticsNode()
+        val onClickAction = node.config[SemanticsActions.OnClick].action
+        onClickAction?.invoke()
+
+        assertThat(finished).isTrue()
+    }
+
+    @Test
     fun `tapping Restart Quiz invokes the callback`() {
         var restarted = false
-        setContent(QuizResult(correct = 4, total = 10, skipped = 2, longestStreak = 2), onRestart = { restarted = true })
+        setContent(
+            result = QuizResult(correct = 4, total = 10, skipped = 2, longestStreak = 2),
+            onRestart = { restarted = true },
+        )
 
-        composeTestRule.onNodeWithText("Restart Quiz").performClick()
+        val node = composeTestRule.onNodeWithText("Restart Quiz").fetchSemanticsNode()
+        val onClickAction = node.config[SemanticsActions.OnClick].action
+        onClickAction?.invoke()
 
         assertThat(restarted).isTrue()
     }

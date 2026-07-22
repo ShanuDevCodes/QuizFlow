@@ -6,8 +6,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -36,7 +38,17 @@ object NetworkModule {
                 HttpLoggingInterceptor.Level.NONE
             }
         }
+        val jsonSanitizerInterceptor = Interceptor { chain ->
+            val response = chain.proceed(chain.request())
+            val body = response.body
+            val contentType = body.contentType()
+            val rawString = body.string()
+            val sanitizedString = rawString.replace(Regex(",\\s*([\\]}])"), "$1")
+            val newBody = sanitizedString.toResponseBody(contentType)
+            response.newBuilder().body(newBody).build()
+        }
         return OkHttpClient.Builder()
+            .addInterceptor(jsonSanitizerInterceptor)
             .addInterceptor(logging)
             .build()
     }

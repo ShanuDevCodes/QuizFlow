@@ -1,5 +1,9 @@
 package com.shanu.quizflow.feature.quiz.presentation.quiz
 
+import com.shanu.quizflow.feature.quiz.presentation.quiz.components.ProgressSegmentFillTagPrefix
+import com.shanu.quizflow.feature.quiz.presentation.quiz.components.ProgressSegmentTag
+import com.shanu.quizflow.feature.quiz.presentation.quiz.components.QuestionProgressBar
+
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag

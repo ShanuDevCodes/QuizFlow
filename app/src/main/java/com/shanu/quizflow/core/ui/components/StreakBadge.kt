@@ -2,12 +2,10 @@ package com.shanu.quizflow.core.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material3.Icon
@@ -20,6 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.shanu.quizflow.core.ui.theme.ComponentPreviews
+import com.shanu.quizflow.core.ui.theme.QuizFlowPreview
 import com.shanu.quizflow.R
 import com.shanu.quizflow.core.ui.theme.Dimens
 
@@ -35,30 +38,44 @@ fun StreakBadge(
     val description = pluralStringResource(descriptionRes, currentStreak, currentStreak)
 
     Surface(
-        shape = RoundedCornerShape(percent = 50),
+        shape = CircleShape,
         color = containerColor,
         modifier = modifier
-            .height(Dimens.StreakBadgeContainerHeight)
-            .width(Dimens.StreakBadgeContainerWidth)
+            .defaultMinSize(
+                minWidth = Dimens.StreakBadgeContainerWidth,
+                minHeight = Dimens.StreakBadgeContainerHeight,
+            )
             .semantics { contentDescription = description },
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = Dimens.SpaceExtraSmall, vertical = Dimens.SpaceExtraSmall),
+            modifier = Modifier.padding(horizontal = Dimens.SpaceSmall, vertical = Dimens.SpaceExtraSmall),
         ) {
             Icon(
                 imageVector = Icons.Filled.LocalFireDepartment,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(Dimens.StreakBadgeSize),
+                modifier = Modifier
+                    .size(Dimens.StreakBadgeSize)
+                    .padding(end = 2.dp),
             )
             Text(
                 text = currentStreak.toString(),
                 color = color,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
+    }
+}
+
+@ComponentPreviews
+@Composable
+private fun StreakBadgePreview() {
+    QuizFlowPreview {
+        StreakBadge(currentStreak = 3, active = true)
     }
 }

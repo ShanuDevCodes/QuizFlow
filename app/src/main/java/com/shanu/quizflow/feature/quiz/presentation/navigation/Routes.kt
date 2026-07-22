@@ -4,10 +4,17 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object LoadingRoute : NavKey
+data object ModuleListRoute : NavKey
 
 @Serializable
-data object QuizRoute : NavKey
+data class QuizRoute(val subjectId: String) : NavKey
 
 @Serializable
-data object ResultsRoute : NavKey
+data class ResultsRoute(
+    val subjectId: String,
+    val correct: Int = 0,
+    val total: Int = 0,
+    val skipped: Int = 0,
+    val streak: Int = 0,
+    val isReview: Boolean = false,
+) : NavKey

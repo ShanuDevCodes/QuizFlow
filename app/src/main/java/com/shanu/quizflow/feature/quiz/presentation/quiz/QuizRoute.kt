@@ -6,31 +6,54 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
+import com.shanu.quizflow.feature.quiz.domain.model.QuizResult
+import com.shanu.quizflow.feature.quiz.presentation.common.LoadingScreen
 
 @Composable
 fun QuizRouteScreen(
+    subjectId: String,
     themeMode: ThemeMode,
     onToggleTheme: () -> Unit,
     dynamicColorEnabled: Boolean,
     onToggleDynamicColor: () -> Unit,
-    onFinished: () -> Unit,
+    onFinished: (QuizResult) -> Unit,
     quizViewModel: QuizViewModel = hiltViewModel(),
 ) {
+    LaunchedEffect(subjectId) {
+        quizViewModel.init(subjectId)
+    }
+
     val uiState by quizViewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState) {
-        if (uiState is QuizUiState.Finished) onFinished()
+        val finishedState = uiState as? QuizUiState.Finished
+        if (finishedState != null) {
+            onFinished(finishedState.result)
+        }
     }
 
-    val questionState = uiState as? QuizUiState.Question ?: return
+    when (val state = uiState) {
+        is QuizUiState.Question -> {
+            QuizScreen(
+                state = state,
+                themeMode = themeMode,
+                onToggleTheme = onToggleTheme,
+                dynamicColorEnabled = dynamicColorEnabled,
+                onToggleDynamicColor = onToggleDynamicColor,
+                onOptionSelected = quizViewModel::onOptionSelected,
+                onSkip = quizViewModel::onSkip,
+            )
+        }
 
-    QuizScreen(
-        state = questionState,
-        themeMode = themeMode,
-        onToggleTheme = onToggleTheme,
-        dynamicColorEnabled = dynamicColorEnabled,
-        onToggleDynamicColor = onToggleDynamicColor,
-        onOptionSelected = quizViewModel::onOptionSelected,
-        onSkip = quizViewModel::onSkip,
-    )
+        else -> {
+            LoadingScreen(
+                uiState = state,
+                themeMode = themeMode,
+                onToggleTheme = onToggleTheme,
+                dynamicColorEnabled = dynamicColorEnabled,
+                onToggleDynamicColor = onToggleDynamicColor,
+                onRetry = quizViewModel::onRetry,
+            )
+        }
+    }
 }

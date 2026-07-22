@@ -1,10 +1,12 @@
 package com.shanu.quizflow.feature.quiz.presentation.quiz
 
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.google.common.truth.Truth.assertThat
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.core.ui.theme.QuizFlowTheme
@@ -45,9 +47,11 @@ class QuizScreenTest {
                     onToggleDynamicColor = {},
                     onOptionSelected = onOptionSelected,
                     onSkip = onSkip,
+                    enableStaggerAnimation = false,
                 )
             }
         }
+        composeTestRule.waitForIdle()
     }
 
     @Test
@@ -85,7 +89,13 @@ class QuizScreenTest {
         var selectedIndex: Int? = null
         setContent(questionState(phase = Phase.ANSWERING), onOptionSelected = { selectedIndex = it })
 
-        composeTestRule.onNodeWithText("Paris").performClick()
+        composeTestRule.onNodeWithText("Paris")
+            .assertExists()
+            .assertIsEnabled()
+            .assertHasClickAction()
+            .performScrollTo()
+            .performClick()
+        composeTestRule.waitForIdle()
 
         assertThat(selectedIndex).isEqualTo(1)
     }
@@ -95,13 +105,7 @@ class QuizScreenTest {
         var skipped = false
         setContent(questionState(phase = Phase.ANSWERING), onSkip = { skipped = true })
 
-        val skipNode = composeTestRule.onNodeWithText("Skip").fetchSemanticsNode()
-        val onClickAction = skipNode.config[androidx.compose.ui.semantics.SemanticsActions.OnClick].action
-        val invokeResult = onClickAction?.invoke()
-        java.io.File("/tmp/semantics_tree_debug.txt").writeText(
-            "invokeResult=$invokeResult, skippedAfterDirectInvoke=$skipped",
-        )
-        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Skip").performClick()
 
         assertThat(skipped).isTrue()
     }

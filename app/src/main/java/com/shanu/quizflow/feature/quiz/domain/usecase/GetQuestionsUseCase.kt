@@ -8,5 +8,6 @@ import javax.inject.Inject
 class GetQuestionsUseCase @Inject constructor(
     private val repository: QuizRepository,
 ) {
-    suspend operator fun invoke(): DataResult<List<Question>> = repository.getQuestions()
+    suspend operator fun invoke(subjectId: String): DataResult<List<Question>> =
+        repository.getQuestions(subjectId)
 }

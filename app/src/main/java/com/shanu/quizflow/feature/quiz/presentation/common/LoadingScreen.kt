@@ -1,4 +1,4 @@
-package com.shanu.quizflow.feature.quiz.presentation.loading
+package com.shanu.quizflow.feature.quiz.presentation.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,14 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shanu.quizflow.R
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.core.ui.components.QuizFlowTopBar
 import com.shanu.quizflow.core.ui.theme.Dimens
-import com.shanu.quizflow.core.ui.theme.QuizFlowTheme
-import com.shanu.quizflow.feature.quiz.presentation.quiz.AppErrorMessage
 import com.shanu.quizflow.feature.quiz.presentation.quiz.QuizUiState
 
 @Composable
@@ -60,7 +57,7 @@ fun LoadingScreen(
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ErrorOutline,
@@ -86,35 +83,5 @@ fun LoadingScreen(
                 else -> QuizSkeleton()
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun LoadingScreenPreview() {
-    QuizFlowTheme(dynamicColor = false) {
-        LoadingScreen(
-            uiState = QuizUiState.Loading,
-            themeMode = ThemeMode.SYSTEM,
-            onToggleTheme = {},
-            dynamicColorEnabled = false,
-            onToggleDynamicColor = {},
-            onRetry = {},
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun LoadingScreenErrorPreview() {
-    QuizFlowTheme(dynamicColor = false) {
-        LoadingScreen(
-            uiState = QuizUiState.Error(AppErrorMessage(R.string.error_network)),
-            themeMode = ThemeMode.SYSTEM,
-            onToggleTheme = {},
-            dynamicColorEnabled = false,
-            onToggleDynamicColor = {},
-            onRetry = {},
-        )
     }
 }

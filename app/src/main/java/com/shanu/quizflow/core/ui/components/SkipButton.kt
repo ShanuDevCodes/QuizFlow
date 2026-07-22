@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.shanu.quizflow.R
+import com.shanu.quizflow.core.ui.theme.ComponentPreviews
+import com.shanu.quizflow.core.ui.theme.QuizFlowPreview
 
 @Composable
 fun SkipButton(
@@ -26,5 +28,13 @@ fun SkipButton(
         ),
     ) {
         Text(stringResource(R.string.skip_button))
+    }
+}
+
+@ComponentPreviews
+@Composable
+private fun SkipButtonPreview() {
+    QuizFlowPreview {
+        SkipButton(onClick = {}, enabled = true)
     }
 }

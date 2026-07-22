@@ -1,4 +1,4 @@
-package com.shanu.quizflow.feature.quiz.presentation.loading
+package com.shanu.quizflow.feature.quiz.presentation.common
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -24,17 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.shanu.quizflow.R
 import com.shanu.quizflow.core.ui.components.SkipButton
 import com.shanu.quizflow.core.ui.components.SpotlightSurface
 import com.shanu.quizflow.core.ui.components.StreakBadge
 import com.shanu.quizflow.core.ui.theme.Dimens
-import com.shanu.quizflow.core.ui.theme.QuizFlowTheme
-import com.shanu.quizflow.feature.quiz.presentation.quiz.QuestionProgressBar
+import com.shanu.quizflow.feature.quiz.presentation.quiz.components.QuestionProgressBar
 
 private val QuestionCardSkeletonHeight = 140.dp
 
@@ -57,7 +53,7 @@ fun QuizSkeleton(modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(R.string.question_progress, 0, 10),
+                text = "Question 0 of 10",
                 style = MaterialTheme.typography.labelLarge,
             )
             StreakBadge(currentStreak = 0, active = false)
@@ -65,7 +61,7 @@ fun QuizSkeleton(modifier: Modifier = Modifier) {
         QuestionProgressBar(
             currentQuestion = 0,
             totalQuestions = 10,
-            modifier = Modifier.padding(top = Dimens.SpaceSmall, bottom = Dimens.SpaceLarge)
+            modifier = Modifier.padding(top = Dimens.SpaceSmall, bottom = Dimens.SpaceLarge),
         )
         SpotlightSurface(
             modifier = Modifier
@@ -100,7 +96,7 @@ private fun SkeletonBlock(
     height: Dp,
     alpha: Float,
     modifier: Modifier = Modifier,
-    widthFraction: Float = 1f
+    widthFraction: Float = 1f,
 ) {
     Box(
         modifier = modifier
@@ -108,14 +104,6 @@ private fun SkeletonBlock(
             .height(height)
             .alpha(alpha)
             .clip(RoundedCornerShape(Dimens.CornerRadiusMedium))
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun QuizSkeletonPreview() {
-    QuizFlowTheme(dynamicColor = false) {
-        QuizSkeleton()
-    }
 }

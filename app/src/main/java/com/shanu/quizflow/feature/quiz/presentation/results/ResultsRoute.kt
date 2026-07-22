@@ -6,32 +6,46 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
-import com.shanu.quizflow.feature.quiz.presentation.quiz.QuizUiState
-import com.shanu.quizflow.feature.quiz.presentation.quiz.QuizViewModel
+import com.shanu.quizflow.feature.quiz.domain.model.QuizResult
+import com.shanu.quizflow.feature.quiz.presentation.navigation.ResultsRoute
 
 @Composable
 fun ResultsRouteScreen(
+    route: ResultsRoute,
     themeMode: ThemeMode,
     onToggleTheme: () -> Unit,
     dynamicColorEnabled: Boolean,
     onToggleDynamicColor: () -> Unit,
+    onFinished: () -> Unit,
     onRestarted: () -> Unit,
-    quizViewModel: QuizViewModel = hiltViewModel(),
+    resultsViewModel: ResultsViewModel = hiltViewModel(),
 ) {
-    val uiState by quizViewModel.uiState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(uiState) {
-        if (uiState is QuizUiState.Question) onRestarted()
+    LaunchedEffect(route.subjectId) {
+        resultsViewModel.init(route.subjectId)
     }
 
-    val finishedState = uiState as? QuizUiState.Finished ?: return
+    val resultState by resultsViewModel.resultState.collectAsStateWithLifecycle()
+
+    val result = if (route.isReview) {
+        resultState ?: return
+    } else {
+        QuizResult(
+            correct = route.correct,
+            total = route.total,
+            skipped = route.skipped,
+            longestStreak = route.streak,
+            highScore = resultState?.highScore ?: route.correct,
+        )
+    }
 
     ResultsScreen(
-        result = finishedState.result,
+        result = result,
         themeMode = themeMode,
         onToggleTheme = onToggleTheme,
         dynamicColorEnabled = dynamicColorEnabled,
         onToggleDynamicColor = onToggleDynamicColor,
-        onRestart = quizViewModel::onRestart,
+        isReview = route.isReview,
+        onFinish = onFinished,
+        onRestart = onRestarted,
     )
 }

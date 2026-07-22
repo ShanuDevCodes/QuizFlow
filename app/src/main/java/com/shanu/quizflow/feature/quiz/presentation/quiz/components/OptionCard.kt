@@ -1,4 +1,4 @@
-package com.shanu.quizflow.feature.quiz.presentation.quiz
+package com.shanu.quizflow.feature.quiz.presentation.quiz.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
@@ -22,6 +22,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.shanu.quizflow.core.ui.theme.ComponentPreviews
+import com.shanu.quizflow.core.ui.theme.QuizFlowPreview
+import com.shanu.quizflow.feature.quiz.presentation.quiz.OptionState
+import com.shanu.quizflow.feature.quiz.presentation.quiz.OptionUi
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -104,3 +109,18 @@ private fun optionIcon(state: OptionState) = when (state) {
     OptionState.WRONG -> Icons.Filled.Cancel
     else -> null
 }
+
+@ComponentPreviews
+@Composable
+private fun OptionCardPreview() {
+    QuizFlowPreview {
+        OptionCard(
+            option = OptionUi(
+                text = "Jetpack Compose",
+                state = OptionState.DEFAULT,
+            ),
+            onClick = {},
+        )
+    }
+}
+
