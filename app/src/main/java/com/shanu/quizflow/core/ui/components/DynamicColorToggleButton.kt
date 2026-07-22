@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.shanu.quizflow.R
+import com.shanu.quizflow.core.ui.theme.ComponentPreviews
+import com.shanu.quizflow.core.ui.theme.QuizFlowPreview
 
 @Composable
 fun DynamicColorToggleButton(
@@ -23,5 +25,16 @@ fun DynamicColorToggleButton(
 
     IconButton(onClick = onClick, modifier = modifier) {
         Icon(imageVector = icon, contentDescription = description)
+    }
+}
+
+@ComponentPreviews
+@Composable
+private fun DynamicColorToggleButtonPreview() {
+    QuizFlowPreview {
+        DynamicColorToggleButton(
+            enabled = true,
+            onClick = {},
+        )
     }
 }

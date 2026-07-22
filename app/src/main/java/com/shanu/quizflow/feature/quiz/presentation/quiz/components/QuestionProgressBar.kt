@@ -1,4 +1,4 @@
-package com.shanu.quizflow.feature.quiz.presentation.quiz
+package com.shanu.quizflow.feature.quiz.presentation.quiz.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -15,7 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import com.shanu.quizflow.core.ui.theme.ComponentPreviews
 import com.shanu.quizflow.core.ui.theme.Dimens
+import com.shanu.quizflow.core.ui.theme.QuizFlowPreview
 
 internal const val ProgressSegmentTag = "progressSegment"
 internal const val ProgressSegmentFillTagPrefix = "progressSegmentFill_"
@@ -86,3 +89,16 @@ private fun ProgressSegment(state: SegmentState, modifier: Modifier = Modifier) 
         )
     }
 }
+
+@ComponentPreviews
+@Composable
+private fun QuestionProgressBarPreview() {
+    QuizFlowPreview {
+        QuestionProgressBar(
+            currentQuestion = 3,
+            totalQuestions = 10,
+            revealing = false,
+        )
+    }
+}
+

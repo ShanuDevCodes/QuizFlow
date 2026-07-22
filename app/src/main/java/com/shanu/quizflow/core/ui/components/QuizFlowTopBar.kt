@@ -9,6 +9,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
+import com.shanu.quizflow.core.ui.theme.ComponentPreviews
+import com.shanu.quizflow.core.ui.theme.QuizFlowPreview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,4 +35,18 @@ fun QuizFlowTopBar(
         },
         modifier = modifier,
     )
+}
+
+@ComponentPreviews
+@Composable
+private fun QuizFlowTopBarPreview() {
+    QuizFlowPreview {
+        QuizFlowTopBar(
+            title = "QuizFlow",
+            themeMode = ThemeMode.SYSTEM,
+            onToggleTheme = {},
+            dynamicColorEnabled = false,
+            onToggleDynamicColor = {},
+        )
+    }
 }

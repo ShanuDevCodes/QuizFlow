@@ -1,5 +1,8 @@
 package com.shanu.quizflow.feature.quiz.presentation.quiz
 
+import com.shanu.quizflow.feature.quiz.presentation.quiz.components.OptionCard
+import com.shanu.quizflow.feature.quiz.presentation.quiz.components.QuestionProgressBar
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.tween
@@ -14,6 +17,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,6 +31,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.shanu.quizflow.R
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
 import com.shanu.quizflow.core.ui.components.LottieCelebration
@@ -33,6 +40,8 @@ import com.shanu.quizflow.core.ui.components.QuizFlowTopBar
 import com.shanu.quizflow.core.ui.components.SkipButton
 import com.shanu.quizflow.core.ui.components.SpotlightSurface
 import com.shanu.quizflow.core.ui.components.StreakBadge
+import com.shanu.quizflow.core.ui.theme.ComponentPreviews
+import com.shanu.quizflow.core.ui.theme.QuizFlowPreview
 import com.shanu.quizflow.core.ui.rememberStaggeredReveal
 import com.shanu.quizflow.core.ui.swipeToSkip
 import com.shanu.quizflow.core.ui.theme.Dimens
@@ -52,6 +61,7 @@ fun QuizScreen(
     onOptionSelected: (Int) -> Unit,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier,
+    enableStaggerAnimation: Boolean = true,
 ) {
     val answering = state.phase == Phase.ANSWERING
 
@@ -67,22 +77,38 @@ fun QuizScreen(
                     onToggleDynamicColor = onToggleDynamicColor,
                 )
             },
+            bottomBar = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(Dimens.SpaceMedium),
+                ) {
+                    SkipButton(onClick = onSkip, enabled = answering)
+                }
+            },
         ) { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(Dimens.SpaceMedium)
+                    .padding(horizontal = Dimens.SpaceMedium)
+                    .verticalScroll(rememberScrollState())
                     .swipeToSkip(enabled = answering, onSkip = onSkip),
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = Dimens.SpaceMedium),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = stringResource(R.string.question_progress, state.questionNumber, state.totalQuestions),
                         style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.weight(1f, fill = false),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                     StreakBadge(currentStreak = state.currentStreak, active = state.streakActive)
                 }
@@ -94,61 +120,81 @@ fun QuizScreen(
                     modifier = Modifier.padding(top = Dimens.SpaceSmall, bottom = Dimens.SpaceLarge),
                 )
 
-                AnimatedContent(
-                    targetState = state,
-                    contentKey = { it.questionNumber },
-                    transitionSpec = {
-                        fadeIn(animationSpec = tween(durationMillis = 1, delayMillis = QuestionExitDurationMs)) togetherWith
-                            (
-                                slideOutHorizontally(
-                                    animationSpec = tween(durationMillis = QuestionExitDurationMs, easing = FastOutLinearInEasing),
-                                    targetOffsetX = { fullWidth -> -fullWidth },
-                                ) + fadeOut(animationSpec = tween(durationMillis = QuestionExitDurationMs))
-                            ) using null
-                    },
-                    label = "questionContent",
-                ) { questionState ->
-                    val revealedCount by rememberStaggeredReveal(
-                        key = questionState.questionNumber,
-                        stepCount = questionState.options.size + 1,
-                        stepDelayMs = OptionRevealStaggerMs,
-                        firstStepDelayMs = InitialRevealDelayMs,
-                        initialDelayMs = QuestionExitDurationMs.toLong(),
-                    )
-
+                if (!enableStaggerAnimation) {
+                    // No-animation path for tests: render content directly
                     Column {
-                        PopIn(visible = revealedCount >= 1) {
-                            SpotlightSurface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = Dimens.SpaceLarge),
-                            ) {
-                                Text(
-                                    text = questionState.text,
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    modifier = Modifier.padding(Dimens.SpaceMedium),
-                                )
-                            }
+                        SpotlightSurface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = Dimens.SpaceLarge),
+                        ) {
+                            Text(
+                                text = state.text,
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(Dimens.SpaceMedium),
+                            )
                         }
 
-                        questionState.options.forEachIndexed { index, option ->
-                            PopIn(visible = revealedCount >= index + 2) {
-                                OptionCard(
-                                    option = option,
-                                    onClick = { onOptionSelected(index) },
-                                    modifier = Modifier.padding(bottom = Dimens.SpaceSmall),
-                                )
+                        state.options.forEachIndexed { index, option ->
+                            OptionCard(
+                                option = option,
+                                onClick = { onOptionSelected(index) },
+                                modifier = Modifier.padding(bottom = Dimens.SpaceSmall),
+                            )
+                        }
+                    }
+                } else {
+                    AnimatedContent(
+                        targetState = state,
+                        contentKey = { it.questionNumber },
+                        transitionSpec = {
+                            fadeIn(animationSpec = tween(durationMillis = 1, delayMillis = QuestionExitDurationMs)) togetherWith
+                                (
+                                    slideOutHorizontally(
+                                        animationSpec = tween(durationMillis = QuestionExitDurationMs, easing = FastOutLinearInEasing),
+                                        targetOffsetX = { fullWidth -> -fullWidth },
+                                    ) + fadeOut(animationSpec = tween(durationMillis = QuestionExitDurationMs))
+                                ) using null
+                        },
+                        label = "questionContent",
+                    ) { questionState ->
+                        val totalSteps = questionState.options.size + 1
+                        val revealedCount by rememberStaggeredReveal(
+                            key = questionState.questionNumber,
+                            stepCount = totalSteps,
+                            stepDelayMs = OptionRevealStaggerMs,
+                            firstStepDelayMs = InitialRevealDelayMs,
+                            initialDelayMs = QuestionExitDurationMs.toLong(),
+                        )
+
+                        Column {
+                            PopIn(visible = revealedCount >= 1) {
+                                SpotlightSurface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = Dimens.SpaceLarge),
+                                ) {
+                                    Text(
+                                        text = questionState.text,
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.padding(Dimens.SpaceMedium),
+                                    )
+                                }
+                            }
+
+                            questionState.options.forEachIndexed { index, option ->
+                                PopIn(visible = revealedCount >= index + 2) {
+                                    OptionCard(
+                                        option = option,
+                                        onClick = { onOptionSelected(index) },
+                                        modifier = Modifier.padding(bottom = Dimens.SpaceSmall),
+                                    )
+                                }
                             }
                         }
                     }
-                }
-
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Bottom,
-                ) {
-                    SkipButton(onClick = onSkip, enabled = answering)
                 }
             }
         }
@@ -164,10 +210,10 @@ fun QuizScreen(
     }
 }
 
-@Preview(showBackground = true)
+@ComponentPreviews
 @Composable
 private fun QuizScreenAnsweringPreview() {
-    QuizFlowTheme(dynamicColor = false) {
+    QuizFlowPreview {
         QuizScreen(
             state = previewQuestionState(phase = Phase.ANSWERING),
             themeMode = ThemeMode.SYSTEM,
@@ -180,10 +226,10 @@ private fun QuizScreenAnsweringPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@ComponentPreviews
 @Composable
 private fun QuizScreenRevealingPreview() {
-    QuizFlowTheme(dynamicColor = false) {
+    QuizFlowPreview {
         QuizScreen(
             state = previewQuestionState(phase = Phase.REVEALING, streak = 3),
             themeMode = ThemeMode.SYSTEM,

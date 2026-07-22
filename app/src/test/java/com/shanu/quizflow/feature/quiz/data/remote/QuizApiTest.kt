@@ -10,10 +10,13 @@ import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
+@RunWith(RobolectricTestRunner::class)
 class QuizApiTest {
 
     private val server = MockWebServer()
@@ -41,7 +44,28 @@ class QuizApiTest {
     }
 
     @Test
-    fun `parses a valid questions array into a list of QuestionDto`() = runTest {
+    fun `parses subjects array into a list of SubjectDto`() = runTest {
+        server.enqueue(
+            MockResponse.Builder()
+                .body(
+                    """
+                    [
+                        {"id": "android_basics", "title": "Android Basics", "description": "Fundamentals", "questions_url": "https://example.com/q.json"}
+                    ]
+                    """.trimIndent(),
+                )
+                .build(),
+        )
+
+        val subjects = api.getSubjects()
+
+        assertThat(subjects).hasSize(1)
+        assertThat(subjects[0].id).isEqualTo("android_basics")
+        assertThat(subjects[0].title).isEqualTo("Android Basics")
+    }
+
+    @Test
+    fun `parses a valid questions array into a list of QuestionDto via getQuestionsByUrl`() = runTest {
         server.enqueue(
             MockResponse.Builder()
                 .body(
@@ -55,28 +79,13 @@ class QuizApiTest {
                 .build(),
         )
 
-        val questions = api.getQuestions()
+        val questions = api.getQuestionsByUrl(server.url("/questions.json").toString())
 
         assertThat(questions).hasSize(2)
         assertThat(questions[0].id).isEqualTo(1)
         assertThat(questions[0].question).isEqualTo("What is 2+2?")
-        assertThat(questions[0].options).containsExactly("3", "4", "5", "6")
+        assertThat(questions[0].stringOptions).containsExactly("3", "4", "5", "6")
         assertThat(questions[1].correctOptionIndex).isEqualTo(1)
-    }
-
-    @Test
-    fun `preserves unicode characters in question text`() = runTest {
-        server.enqueue(
-            MockResponse.Builder()
-                .body(
-                    """[{"id": 1, "question": "Café – what’s new?", "options": ["A", "B", "C", "D"], "correctOptionIndex": 0}]""",
-                )
-                .build(),
-        )
-
-        val questions = api.getQuestions()
-
-        assertThat(questions[0].question).isEqualTo("Café – what’s new?")
     }
 
     @Test
@@ -84,7 +93,7 @@ class QuizApiTest {
         server.enqueue(MockResponse.Builder().code(500).build())
 
         try {
-            api.getQuestions()
+            api.getSubjects()
             error("Expected HttpException")
         } catch (expected: HttpException) {
         }

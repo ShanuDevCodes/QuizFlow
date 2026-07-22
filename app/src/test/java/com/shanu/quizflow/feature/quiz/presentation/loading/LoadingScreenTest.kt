@@ -1,5 +1,7 @@
 package com.shanu.quizflow.feature.quiz.presentation.loading
 
+import com.shanu.quizflow.feature.quiz.presentation.common.LoadingScreen
+
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick

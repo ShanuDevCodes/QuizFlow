@@ -1,4 +1,5 @@
 [versions]
+room = "2.7.1"
 agp = "9.3.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -73,6 +74,12 @@ androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-
 
 # Splash
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
+
+# Room
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 
 # Testing
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }

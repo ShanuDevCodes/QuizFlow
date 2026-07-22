@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.shanu.quizflow.R
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
+import com.shanu.quizflow.core.ui.theme.ComponentPreviews
+import com.shanu.quizflow.core.ui.theme.QuizFlowPreview
 
 @Composable
 fun ThemeToggleButton(
@@ -27,5 +29,16 @@ fun ThemeToggleButton(
 
     IconButton(onClick = onClick, modifier = modifier) {
         Icon(imageVector = icon, contentDescription = description)
+    }
+}
+
+@ComponentPreviews
+@Composable
+private fun ThemeToggleButtonPreview() {
+    QuizFlowPreview {
+        ThemeToggleButton(
+            themeMode = ThemeMode.LIGHT,
+            onClick = {},
+        )
     }
 }

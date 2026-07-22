@@ -1,35 +1,31 @@
-package com.shanu.quizflow.feature.quiz.presentation.loading
+package com.shanu.quizflow.feature.quiz.presentation.modulelist
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shanu.quizflow.core.settings.domain.model.ThemeMode
-import com.shanu.quizflow.feature.quiz.presentation.quiz.QuizUiState
-import com.shanu.quizflow.feature.quiz.presentation.quiz.QuizViewModel
 
 @Composable
-fun LoadingRouteScreen(
+fun ModuleListRouteScreen(
     themeMode: ThemeMode,
     onToggleTheme: () -> Unit,
     dynamicColorEnabled: Boolean,
     onToggleDynamicColor: () -> Unit,
-    onLoaded: () -> Unit,
-    quizViewModel: QuizViewModel = hiltViewModel(),
+    onStartModule: (String) -> Unit,
+    onReviewModule: (String) -> Unit,
+    viewModel: ModuleListViewModel = hiltViewModel(),
 ) {
-    val uiState by quizViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState) {
-        if (uiState is QuizUiState.Question) onLoaded()
-    }
-
-    LoadingScreen(
-        uiState = uiState,
+    ModuleListScreen(
+        state = uiState,
         themeMode = themeMode,
         onToggleTheme = onToggleTheme,
         dynamicColorEnabled = dynamicColorEnabled,
         onToggleDynamicColor = onToggleDynamicColor,
-        onRetry = quizViewModel::onRetry,
+        onStartModule = onStartModule,
+        onReviewModule = onReviewModule,
+        onRetry = viewModel::sync,
     )
 }

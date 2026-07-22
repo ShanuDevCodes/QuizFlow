@@ -17,7 +17,7 @@ class GetQuestionsUseCaseTest {
         val repository = FakeQuizRepository(DataResult.Success(questions))
         val useCase = GetQuestionsUseCase(repository)
 
-        val result = useCase()
+        val result = useCase("android_basics")
 
         assertThat(result).isEqualTo(DataResult.Success(questions))
     }
@@ -27,7 +27,7 @@ class GetQuestionsUseCaseTest {
         val repository = FakeQuizRepository(errorResult(AppError.Network))
         val useCase = GetQuestionsUseCase(repository)
 
-        val result = useCase()
+        val result = useCase("android_basics")
 
         assertThat(result).isEqualTo(DataResult.Error(AppError.Network))
     }
@@ -37,7 +37,7 @@ class GetQuestionsUseCaseTest {
         val repository = FakeQuizRepository()
         val useCase = GetQuestionsUseCase(repository)
 
-        useCase()
+        useCase("android_basics")
 
         assertThat(repository.getQuestionsCallCount).isEqualTo(1)
     }
