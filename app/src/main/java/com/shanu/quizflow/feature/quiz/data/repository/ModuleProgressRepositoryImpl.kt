@@ -34,7 +34,7 @@ class ModuleProgressRepositoryImpl @Inject constructor(
             progressDao.getBySubjectId(subjectId)?.toDomain()
         }
 
-    override suspend fun saveResult(subjectId: String, score: Int, total: Int, longestStreak: Int) =
+    override suspend fun saveResult(subjectId: String, score: Int, total: Int, longestStreak: Int): Unit =
         withContext(dispatcherProvider.io) {
             val existing = progressDao.getBySubjectId(subjectId)
             val highScore = maxOf(existing?.highScore ?: 0, score)
@@ -54,7 +54,7 @@ class ModuleProgressRepositoryImpl @Inject constructor(
             sessionStateDao.deleteSessionState(subjectId)
         }
 
-    override suspend fun saveSessionState(subjectId: String, session: QuizSession) =
+    override suspend fun saveSessionState(subjectId: String, session: QuizSession): Unit =
         withContext(dispatcherProvider.io) {
             sessionStateDao.upsertSessionState(
                 QuizSessionStateEntity(
@@ -83,7 +83,7 @@ class ModuleProgressRepositoryImpl @Inject constructor(
             )
         }
 
-    override suspend fun clearSessionState(subjectId: String) =
+    override suspend fun clearSessionState(subjectId: String): Unit =
         withContext(dispatcherProvider.io) {
             sessionStateDao.deleteSessionState(subjectId)
         }

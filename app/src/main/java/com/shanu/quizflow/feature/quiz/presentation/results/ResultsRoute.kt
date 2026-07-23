@@ -20,7 +20,7 @@ fun ResultsRouteScreen(
     onRestarted: () -> Unit,
     resultsViewModel: ResultsViewModel = hiltViewModel(),
 ) {
-    LaunchedEffect(route.subjectId) {
+    LaunchedEffect(resultsViewModel, route.subjectId) {
         resultsViewModel.init(route.subjectId)
     }
 

@@ -29,7 +29,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -75,6 +77,8 @@ fun ResultsScreen(
         stepDelayMs = RevealStaggerMs,
     )
 
+    var actionClicked by remember { mutableStateOf(false) }
+
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -96,7 +100,13 @@ fun ResultsScreen(
                             .padding(Dimens.SpaceMedium),
                     ) {
                         Button(
-                            onClick = onFinish,
+                            onClick = {
+                                if (!actionClicked) {
+                                    actionClicked = true
+                                    onFinish()
+                                }
+                            },
+                            enabled = !actionClicked,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
@@ -106,7 +116,13 @@ fun ResultsScreen(
                             )
                         }
                         OutlinedButton(
-                            onClick = onRestart,
+                            onClick = {
+                                if (!actionClicked) {
+                                    actionClicked = true
+                                    onRestart()
+                                }
+                            },
+                            enabled = !actionClicked,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = Dimens.SpaceSmall),

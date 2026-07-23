@@ -66,7 +66,9 @@ class QuizViewModel @Inject constructor(
     }
 
     fun init(subjectId: String, forceReload: Boolean = false) {
-        if (!forceReload && this.subjectId == subjectId && _uiState.value !is QuizUiState.Loading) return
+        if (!forceReload && this.subjectId == subjectId && _uiState.value !is QuizUiState.Loading) {
+            return
+        }
         this.subjectId = subjectId
         savedStateHandle["subjectId"] = subjectId
         loadQuestions(subjectId)
@@ -79,8 +81,8 @@ class QuizViewModel @Inject constructor(
     }
 
     fun onOptionSelected(index: Int) {
-        val session = currentSession ?: return
-        if (currentPhase != Phase.ANSWERING) return
+        val session = currentSession
+        if (session == null || currentPhase != Phase.ANSWERING) return
 
         val answeredSession = answerQuestion(session, index)
         updateSession(answeredSession, phase = Phase.REVEALING, selectedIndex = index)
@@ -92,8 +94,8 @@ class QuizViewModel @Inject constructor(
     }
 
     fun onSkip() {
-        val session = currentSession ?: return
-        if (currentPhase != Phase.ANSWERING) return
+        val session = currentSession
+        if (session == null || currentPhase != Phase.ANSWERING) return
 
         revealJob?.cancel()
         updateSession(skipQuestion(session))
@@ -116,7 +118,8 @@ class QuizViewModel @Inject constructor(
     }
 
     fun onFinish() {
-        val session = currentSession ?: return
+        val session = currentSession
+        if (session == null) return
         revealJob?.cancel()
         updateSession(session.copy(currentIndex = session.questions.size))
     }
@@ -137,7 +140,8 @@ class QuizViewModel @Inject constructor(
                 val restored = restoreSession(targetSubjectId)
                 if (restored != null && !restored.isFinished) {
                     val elapsedMs = System.currentTimeMillis() - startedAtMs
-                    delay(remainingLoadingDelayMs(loadingMinDurationMs, elapsedMs).milliseconds)
+                    val remainingDelay = remainingLoadingDelayMs(loadingMinDurationMs, elapsedMs)
+                    delay(remainingDelay.milliseconds)
                     updateSession(restored)
                     return@launch
                 }
@@ -145,9 +149,12 @@ class QuizViewModel @Inject constructor(
 
             val result = getQuestions(targetSubjectId)
             val elapsedMs = System.currentTimeMillis() - startedAtMs
-            delay(remainingLoadingDelayMs(loadingMinDurationMs, elapsedMs).milliseconds)
+            val remainingDelay = remainingLoadingDelayMs(loadingMinDurationMs, elapsedMs)
+            delay(remainingDelay.milliseconds)
             when (result) {
-                is DataResult.Success -> updateSession(QuizSession(questions = result.data))
+                is DataResult.Success -> {
+                    updateSession(QuizSession(questions = result.data))
+                }
                 is DataResult.Error -> {
                     currentSession = null
                     _uiState.value = QuizUiState.Error(result.error.toMessage())
@@ -179,7 +186,8 @@ class QuizViewModel @Inject constructor(
             }
         }
 
-        _uiState.value = uiStateMapper(session, phase, selectedIndex)
+        val newUiState = uiStateMapper(session, phase, selectedIndex)
+        _uiState.value = newUiState
     }
 
     override fun onCleared() {

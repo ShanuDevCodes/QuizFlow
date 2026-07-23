@@ -7,7 +7,10 @@ import kotlinx.serialization.Serializable
 data object ModuleListRoute : NavKey
 
 @Serializable
-data class QuizRoute(val subjectId: String) : NavKey
+data class QuizRoute(
+    val subjectId: String,
+    val instanceId: Long = System.nanoTime(),
+) : NavKey
 
 @Serializable
 data class ResultsRoute(
